@@ -1,0 +1,304 @@
+/* ============================================
+   CYBERPUNK TERMINAL THEME
+   赛博朋克终端主题
+   ============================================ */
+
+/* Import Terminal Font */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Core Colors - 核心色彩 */
+  --cyber-black: #0a0a0f;
+  --cyber-dark: #0d0d14;
+  --cyber-darker: #08080c;
+  --cyber-panel: #0f0f18;
+  --cyber-surface: #14141f;
+
+  /* Neon Colors - 霓虹色 */
+  --neon-green: #00ff9f;
+  --neon-green-dim: #00cc7f;
+  --neon-green-dark: #00995f;
+  --neon-cyan: #00f0ff;
+  --neon-cyan-dim: #00c0cc;
+  --neon-purple: #bf00ff;
+  --neon-purple-dim: #9900cc;
+  --neon-pink: #ff0080;
+  --neon-yellow: #ffff00;
+  --neon-orange: #ff6600;
+  --neon-red: #ff0040;
+
+  /* Text Colors - 文字色 */
+  --text-primary: #e0e0e0;
+  --text-secondary: #808090;
+  --text-dim: #505060;
+  --text-glow: #00ff9f;
+
+  /* Glow Effects - 发光效果 */
+  --glow-green: 0 0 10px #00ff9f, 0 0 20px #00ff9f40, 0 0 40px #00ff9f20;
+  --glow-cyan: 0 0 10px #00f0ff, 0 0 20px #00f0ff40, 0 0 40px #00f0ff20;
+  --glow-purple: 0 0 10px #bf00ff, 0 0 20px #bf00ff40, 0 0 40px #bf00ff20;
+  --glow-red: 0 0 10px #ff0040, 0 0 20px #ff004040, 0 0 40px #ff004020;
+  --glow-yellow: 0 0 10px #ffff00, 0 0 20px #ffff0040, 0 0 40px #ffff0020;
+
+  /* Border & Lines - 边框线条 */
+  --border-dim: #1a1a2e;
+  --border-glow: #00ff9f30;
+  --scanline-color: rgba(0, 255, 159, 0.03);
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+  background: var(--cyber-black);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Scrollbar - 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cyber-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-green-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-green);
+  box-shadow: var(--glow-green);
+}
+
+/* Selection */
+::selection {
+  background: var(--neon-green);
+  color: var(--cyber-black);
+}
+
+/* ============================================
+   ANIMATIONS
+   动画效果
+   ============================================ */
+
+/* Blink Cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Pulse Glow */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.7;
+    filter: brightness(1.3);
+  }
+}
+
+/* Breathing LED */
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+    opacity: 0.8;
+  }
+  50% {
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    opacity: 1;
+  }
+}
+
+/* Scan Line Move */
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* Glitch Effect */
+@keyframes glitch {
+  0%, 90%, 100% {
+    transform: translate(0);
+    filter: none;
+  }
+  91% {
+    transform: translate(-2px, 1px);
+    filter: hue-rotate(90deg);
+  }
+  92% {
+    transform: translate(2px, -1px);
+    filter: hue-rotate(-90deg);
+  }
+  93% {
+    transform: translate(-1px, 2px);
+  }
+}
+
+/* Data Stream */
+@keyframes dataStream {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 1000px; }
+}
+
+/* Neon Flicker */
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.6;
+  }
+}
+
+/* Progress Bar Animation */
+@keyframes progress-scan {
+  0% { left: -30%; }
+  100% { left: 100%; }
+}
+
+/* Float Animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Matrix Rain */
+@keyframes matrix-fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* Border Glow Pulse */
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: var(--neon-green-dark);
+    box-shadow: inset 0 0 20px rgba(0, 255, 159, 0.05);
+  }
+  50% {
+    border-color: var(--neon-green);
+    box-shadow: inset 0 0 30px rgba(0, 255, 159, 0.1), 0 0 20px rgba(0, 255, 159, 0.1);
+  }
+}
+
+/* Typing Effect */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Horizontal Scan */
+@keyframes h-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Fade In Up */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide In */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Spin */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ELEMENT PLUS OVERRIDES
+   Element Plus 覆盖
+   ============================================ */
+
+.el-message {
+  background: var(--cyber-panel) !important;
+  border: 1px solid var(--neon-green-dim) !important;
+  border-radius: 0 !important;
+  box-shadow: var(--glow-green) !important;
+}
+
+.el-message--success {
+  border-color: var(--neon-green) !important;
+}
+
+.el-message--success .el-message__content {
+  color: var(--neon-green) !important;
+}
+
+.el-message--warning {
+  border-color: var(--neon-yellow) !important;
+}
+
+.el-message--warning .el-message__content {
+  color: var(--neon-yellow) !important;
+}
+
+.el-message--error {
+  border-color: var(--neon-red) !important;
+}
+
+.el-message--error .el-message__content {
+  color: var(--neon-red) !important;
+}
+
+.el-message__content {
+  color: var(--text-primary) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.el-message__icon {
+  display: none !important;
+}

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import Annotated
 
 from ..models.config import CenterConfig, ConfigUpdate
+from ..services import database
 
 router = APIRouter(prefix="/api/config", tags=["config"])
 
@@ -29,7 +30,7 @@ async def update_config(
     config_update: ConfigUpdate,
     cfg: Annotated[CenterConfig, Depends(get_config)]
 ):
-    """Update configuration (hot update)."""
+    """Update configuration (hot update with persistence)."""
     update_data = config_update.model_dump(exclude_unset=True)
 
     # Create updated config
@@ -37,5 +38,10 @@ async def update_config(
         **{**cfg.model_dump(), **update_data}
     )
 
+    # Update in memory
     set_config(new_config)
+
+    # Persist to SQLite
+    await database.save_config(new_config)
+
     return new_config

@@ -10,9 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .models.config import CenterConfig
+from .models.instance import InstanceStatus
 from .services.queue_manager import QueueManager
 from .services.instance_pool import InstancePool
 from .services.scheduler import Scheduler
+from .services import database
 from .api import tasks_router, instances_router, config_router, stats_router
 
 # Setup logging
@@ -39,6 +41,11 @@ def set_global_config(new_config: CenterConfig) -> None:
     scheduler.config = new_config
 
 
+async def save_config_to_db(new_config: CenterConfig) -> None:
+    """Save config to database."""
+    await database.save_config(new_config)
+
+
 async def health_check_loop():
     """Periodic health check loop."""
     while True:
@@ -52,6 +59,34 @@ async def health_check_loop():
             await asyncio.sleep(5)
 
 
+async def load_persisted_data():
+    """Load persisted configuration and instances from database."""
+    global config
+
+    # Initialize database
+    await database.init_database()
+
+    # Load config
+    config = await database.load_config()
+    scheduler.config = config
+    logger.info(f"Loaded config from database: task_timeout={config.task_timeout}s")
+
+    # Load instances
+    instances = await database.load_instances()
+    for inst_data in instances:
+        instance = instance_pool.add_instance(inst_data["url"], inst_data["name"])
+        # Override the auto-generated ID with the persisted one
+        instance_pool._instances.pop(instance.id)
+        instance.id = inst_data["id"]
+        instance.enabled = inst_data["enabled"]
+        instance.total_tasks = inst_data["total_tasks"]
+        instance.failed_tasks = inst_data["failed_tasks"]
+        instance.status = InstanceStatus.IDLE if instance.enabled else InstanceStatus.DISABLED
+        instance_pool._instances[instance.id] = instance
+
+    logger.info(f"Loaded {len(instances)} instances from database")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
@@ -59,6 +94,10 @@ async def lifespan(app: FastAPI):
 
     # Startup
     logger.info("Starting MinerU Center...")
+
+    # Load persisted data from SQLite
+    await load_persisted_data()
+
     await scheduler.start()
     health_check_task = asyncio.create_task(health_check_loop())
     logger.info("MinerU Center started successfully")

@@ -57,6 +57,7 @@ yarn-error.log*
 *.sqlite3
 config.local.json
 config.local.yaml
+data/
 
 # Temp
 tmp/

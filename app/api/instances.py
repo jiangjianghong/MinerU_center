@@ -3,6 +3,7 @@ from typing import Annotated
 
 from ..models.instance import MinerUInstance, InstanceCreate, InstanceResponse, InstanceStatus
 from ..services.instance_pool import InstancePool
+from ..services import database
 
 router = APIRouter(prefix="/api/instances", tags=["instances"])
 
@@ -44,6 +45,17 @@ async def add_instance(
         url=instance_create.url,
         name=instance_create.name
     )
+
+    # Persist to SQLite
+    await database.save_instance(
+        instance_id=instance.id,
+        name=instance.name,
+        url=instance.url,
+        enabled=instance.enabled,
+        total_tasks=instance.total_tasks,
+        failed_tasks=instance.failed_tasks
+    )
+
     return InstanceResponse(
         id=instance.id,
         name=instance.name,
@@ -74,6 +86,8 @@ async def remove_instance(
         )
 
     if pool.remove_instance(instance_id):
+        # Delete from SQLite
+        await database.delete_instance(instance_id)
         return {"message": "Instance removed", "instance_id": instance_id}
     raise HTTPException(status_code=404, detail="Instance not found")
 
@@ -86,6 +100,8 @@ async def enable_instance(
     """Enable an instance."""
     if pool.enable_instance(instance_id):
         pool.set_status(instance_id, InstanceStatus.IDLE)
+        # Persist to SQLite
+        await database.update_instance_enabled(instance_id, True)
         return {"message": "Instance enabled", "instance_id": instance_id}
     raise HTTPException(status_code=404, detail="Instance not found")
 
@@ -97,5 +113,7 @@ async def disable_instance(
 ):
     """Disable an instance."""
     if pool.disable_instance(instance_id):
+        # Persist to SQLite
+        await database.update_instance_enabled(instance_id, False)
         return {"message": "Instance disabled", "instance_id": instance_id}
     raise HTTPException(status_code=404, detail="Instance not found")

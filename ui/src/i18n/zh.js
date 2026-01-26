@@ -11,16 +11,28 @@ export default {
     connected: '已连接',
     disconnected: '已断开'
   },
+  dashboard: {
+    title: 'MINERU',
+    subtitle: '控制中心 v1.0',
+    sysTime: '系统时间',
+    linkOk: '连接正常',
+    offline: '离线',
+    sysReady: '系统就绪',
+    mem: '内存',
+    cpu: '处理器',
+    net: '网络'
+  },
   stats: {
     title: '统计概览',
-    totalTasks: '总任务',
+    totalTasks: '总任务数',
     pending: '排队中',
     running: '处理中',
     completed: '已完成',
     failed: '失败',
     idle: '空闲',
     busy: '忙碌',
-    offline: '离线'
+    offline: '离线',
+    instanceStatus: '实例状态'
   },
   status: {
     pending: '排队中',
@@ -31,22 +43,27 @@ export default {
     cancelled: '已取消'
   },
   instances: {
-    title: '实例列表',
-    add: '添加实例',
+    title: '服务器池',
+    add: '添加节点',
     name: '名称',
     url: '地址',
     status: '状态',
     currentTask: '当前任务',
-    noInstances: '暂无实例',
-    addSuccess: '实例添加成功',
-    addFailed: '实例添加失败',
-    removeSuccess: '实例移除成功',
-    removeFailed: '实例移除失败',
-    enableSuccess: '实例已启用',
-    disableSuccess: '实例已禁用',
-    updateFailed: '实例更新失败',
+    noInstances: '暂无服务器',
+    addSuccess: '节点添加成功',
+    addFailed: '节点添加失败',
+    removeSuccess: '节点移除成功',
+    removeFailed: '节点移除失败',
+    enableSuccess: '节点已启用',
+    disableSuccess: '节点已禁用',
+    updateFailed: '节点更新失败',
     fillAllFields: '请填写所有字段',
-    cannotRemoveRunning: '无法移除正在运行任务的实例'
+    cannotRemoveRunning: '无法移除正在运行任务的节点',
+    newNode: '新建服务器节点',
+    nodeName: '节点名称',
+    nodeAddr: '节点地址',
+    connect: '连接',
+    initNode: '初始化节点'
   },
   queue: {
     title: '任务队列',
@@ -57,7 +74,12 @@ export default {
     priority: '优先级',
     cancelTask: '取消任务',
     cancelSuccess: '任务已取消',
-    cancelFailed: '取消失败'
+    cancelFailed: '取消失败',
+    queueStatus: '队列状态',
+    active: '活动',
+    procActive: '处理中',
+    queueWaiting: '等待中',
+    waitingForTasks: '等待任务中...'
   },
   config: {
     title: '系统配置',

@@ -9,10 +9,10 @@
             <span class="logo-text">M</span>
           </div>
           <div class="logo-info">
-            <h1 class="logo-title">MINERU<span class="blink">_</span></h1>
+            <h1 class="logo-title">{{ t('dashboard.title') }}<span class="blink">_</span></h1>
             <div class="logo-subtitle">
               <span class="terminal-prompt">&gt;</span>
-              <span class="typing-text">CONTROL CENTER v1.0</span>
+              <span class="typing-text">{{ t('dashboard.subtitle') }}</span>
             </div>
           </div>
         </div>
@@ -20,7 +20,7 @@
 
       <div class="header-center">
         <div class="system-time">
-          <span class="time-label">SYS.TIME</span>
+          <span class="time-label">{{ t('dashboard.sysTime') }}</span>
           <span class="time-value">{{ currentTime }}</span>
         </div>
       </div>
@@ -29,7 +29,7 @@
         <!-- Connection Status -->
         <div class="status-indicator" :class="{ connected: wsConnected }">
           <div class="led" :class="wsConnected ? 'green' : 'red'"></div>
-          <span class="status-text">{{ wsConnected ? 'LINK.OK' : 'OFFLINE' }}</span>
+          <span class="status-text">{{ wsConnected ? t('dashboard.linkOk') : t('dashboard.offline') }}</span>
         </div>
 
         <!-- Divider -->
@@ -37,17 +37,17 @@
 
         <!-- Control Buttons -->
         <button class="cyber-btn-icon" @click="toggleLocale" :title="locale === 'zh' ? 'EN' : '中'">
-          <span class="btn-label">{{ locale === 'zh' ? 'ZH' : 'EN' }}</span>
+          <span class="btn-label">{{ locale === 'zh' ? '中' : 'EN' }}</span>
         </button>
 
-        <button class="cyber-btn-icon" @click="showConfig = true" title="CONFIG">
+        <button class="cyber-btn-icon" @click="showConfig = true" :title="t('common.config')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
 
-        <button class="cyber-btn-icon" @click="refresh" :class="{ active: isRefreshing }" title="SYNC">
+        <button class="cyber-btn-icon" @click="refresh" :class="{ active: isRefreshing }" :title="t('common.refresh')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" :class="{ spin: isRefreshing }">
             <path d="M23 4v6h-6M1 20v-6h6"/>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -80,13 +80,13 @@
       <div class="footer-left">
         <span class="footer-item">
           <span class="led green"></span>
-          SYS.READY
+          {{ t('dashboard.sysReady') }}
         </span>
       </div>
       <div class="footer-right">
-        <span class="footer-item">MEM: 64%</span>
-        <span class="footer-item">CPU: 23%</span>
-        <span class="footer-item">NET: OK</span>
+        <span class="footer-item">{{ t('dashboard.mem') }}: 64%</span>
+        <span class="footer-item">{{ t('dashboard.cpu') }}: 23%</span>
+        <span class="footer-item">{{ t('dashboard.net') }}: OK</span>
       </div>
     </footer>
 

@@ -4,19 +4,19 @@
     <div class="panel-header">
       <div class="header-left">
         <span class="header-icon">[</span>
-        <span class="header-title">TASK.QUEUE</span>
+        <span class="header-title">{{ t('queue.title') }}</span>
         <span class="header-icon">]</span>
       </div>
       <div class="header-badges">
         <div class="badge yellow">
           <span class="badge-led"></span>
           <span class="badge-count">{{ queuedTasks.length }}</span>
-          <span class="badge-label">PENDING</span>
+          <span class="badge-label">{{ t('queue.pending') }}</span>
         </div>
         <div class="badge cyan">
           <span class="badge-led"></span>
           <span class="badge-count">{{ runningTasks.length }}</span>
-          <span class="badge-label">RUNNING</span>
+          <span class="badge-label">{{ t('queue.running') }}</span>
         </div>
       </div>
     </div>
@@ -24,8 +24,8 @@
     <!-- Queue Progress -->
     <div class="queue-progress">
       <div class="progress-header">
-        <span class="progress-label">&gt; QUEUE.STATUS</span>
-        <span class="progress-value">{{ queuedTasks.length + runningTasks.length }} ACTIVE</span>
+        <span class="progress-label">&gt; {{ t('queue.queueStatus') }}</span>
+        <span class="progress-value">{{ queuedTasks.length + runningTasks.length }} {{ t('queue.active') }}</span>
       </div>
       <div class="progress-track">
         <div class="progress-fill pending" :style="{ width: pendingWidth }">
@@ -37,9 +37,9 @@
         <div class="progress-scan"></div>
       </div>
       <div class="progress-legend">
-        <span class="legend-item yellow">PENDING</span>
-        <span class="legend-item cyan">RUNNING</span>
-        <span class="legend-item green">COMPLETE</span>
+        <span class="legend-item yellow">{{ t('queue.pending') }}</span>
+        <span class="legend-item cyan">{{ t('queue.running') }}</span>
+        <span class="legend-item green">{{ t('stats.completed') }}</span>
       </div>
     </div>
 
@@ -49,7 +49,7 @@
       <div v-if="runningTasks.length > 0" class="task-group">
         <div class="group-header">
           <span class="group-icon">&gt;</span>
-          <span class="group-title">PROC.ACTIVE</span>
+          <span class="group-title">{{ t('queue.procActive') }}</span>
           <div class="group-led cyan pulse"></div>
         </div>
         <TransitionGroup name="task" tag="div" class="task-list">
@@ -66,7 +66,7 @@
       <div v-if="queuedTasks.length > 0" class="task-group">
         <div class="group-header">
           <span class="group-icon">&gt;</span>
-          <span class="group-title">QUEUE.WAITING</span>
+          <span class="group-title">{{ t('queue.queueWaiting') }}</span>
           <div class="group-led yellow"></div>
         </div>
         <TransitionGroup name="task" tag="div" class="task-list">
@@ -88,11 +88,11 @@
             <span class="cmd">queue.status()</span>
           </div>
           <div class="terminal-line output">
-            <span class="result">QUEUE_EMPTY</span>
+            <span class="result">{{ t('queue.empty') }}</span>
           </div>
           <div class="terminal-line">
             <span class="prompt">&gt;</span>
-            <span class="cmd">waiting_for_tasks...</span>
+            <span class="cmd">{{ t('queue.waitingForTasks') }}</span>
             <span class="cursor"></span>
           </div>
         </div>
@@ -105,10 +105,12 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
+import { useI18n } from '../i18n'
 import TaskCard from './TaskCard.vue'
 
 const store = useMainStore()
 const { queuedTasks, runningTasks } = storeToRefs(store)
+const { t } = useI18n()
 
 const total = computed(() => {
   const pending = queuedTasks.value.length

@@ -27,10 +27,10 @@
   --neon-orange: #ff6600;
   --neon-red: #ff0040;
 
-  /* Text Colors - 文字色 */
-  --text-primary: #e0e0e0;
-  --text-secondary: #808090;
-  --text-dim: #505060;
+  /* Text Colors - 文字色 (高对比度) */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0c0;
+  --text-dim: #707080;
   --text-glow: #00ff9f;
 
   /* Glow Effects - 发光效果 */

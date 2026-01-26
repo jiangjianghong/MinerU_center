@@ -4,12 +4,12 @@
     <div class="panel-header">
       <div class="header-left">
         <span class="header-icon">[</span>
-        <span class="header-title">SERVER.POOL</span>
+        <span class="header-title">{{ t('instances.title') }}</span>
         <span class="header-icon">]</span>
       </div>
       <button class="add-btn" @click="showAddDialog = true">
         <span class="btn-icon">+</span>
-        <span class="btn-text">ADD.NODE</span>
+        <span class="btn-text">{{ t('instances.add') }}</span>
       </button>
     </div>
 
@@ -40,11 +40,11 @@
 
             <div class="server-details">
               <div class="detail-row">
-                <span class="detail-label">NAME:</span>
+                <span class="detail-label">{{ t('instances.name') }}:</span>
                 <span class="detail-value">{{ instance.name }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">ADDR:</span>
+                <span class="detail-label">{{ t('instances.url') }}:</span>
                 <span class="detail-value mono">{{ instance.url }}</span>
               </div>
               <div v-if="instance.current_task_id" class="detail-row active">
@@ -60,7 +60,7 @@
               class="ctrl-btn"
               :class="instance.enabled ? 'active' : ''"
               @click="toggleInstance(instance.id, !instance.enabled)"
-              :title="instance.enabled ? 'DISABLE' : 'ENABLE'"
+              :title="instance.enabled ? t('common.disable') : t('common.enable')"
             >
               <span class="ctrl-icon">{{ instance.enabled ? '||' : '▶' }}</span>
             </button>
@@ -68,7 +68,7 @@
               class="ctrl-btn danger"
               @click="removeInstance(instance.id)"
               :disabled="!!instance.current_task_id"
-              title="REMOVE"
+              :title="t('common.remove')"
             >
               <span class="ctrl-icon">×</span>
             </button>
@@ -87,15 +87,14 @@
         <div class="empty-ascii">
           <pre>
   ┌─────────────────┐
-  │  NO SERVERS     │
-  │  CONNECTED      │
+  │  {{ t('instances.noInstances').padEnd(15) }}  │
   │                 │
   │  [+ ADD NODE]   │
   └─────────────────┘
           </pre>
         </div>
         <button class="add-btn-empty" @click="showAddDialog = true">
-          <span>+ INITIALIZE NODE</span>
+          <span>+ {{ t('instances.initNode') }}</span>
         </button>
       </div>
     </div>
@@ -109,7 +108,7 @@
             <div class="modal-header">
               <div class="modal-title">
                 <span class="title-bracket">[</span>
-                <span>NEW.SERVER.NODE</span>
+                <span>{{ t('instances.newNode') }}</span>
                 <span class="title-bracket">]</span>
               </div>
               <button class="close-btn" @click="showAddDialog = false">×</button>
@@ -118,7 +117,7 @@
             <!-- Modal Body -->
             <div class="modal-body">
               <div class="form-group">
-                <label class="form-label">&gt; NODE.NAME</label>
+                <label class="form-label">&gt; {{ t('instances.nodeName') }}</label>
                 <input
                   v-model="newInstance.name"
                   type="text"
@@ -127,7 +126,7 @@
                 />
               </div>
               <div class="form-group">
-                <label class="form-label">&gt; NODE.ADDRESS</label>
+                <label class="form-label">&gt; {{ t('instances.nodeAddr') }}</label>
                 <input
                   v-model="newInstance.url"
                   type="text"
@@ -140,10 +139,10 @@
             <!-- Modal Footer -->
             <div class="modal-footer">
               <button class="cyber-btn secondary" @click="showAddDialog = false">
-                CANCEL
+                {{ t('common.cancel') }}
               </button>
               <button class="cyber-btn primary" @click="addInstance">
-                CONNECT
+                {{ t('instances.connect') }}
               </button>
             </div>
 

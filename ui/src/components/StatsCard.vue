@@ -5,7 +5,7 @@
       <!-- Total Tasks -->
       <div class="stat-card">
         <div class="stat-header">
-          <span class="stat-label">TOTAL.TASKS</span>
+          <span class="stat-label">{{ t('stats.totalTasks') }}</span>
           <div class="led cyan"></div>
         </div>
         <div class="stat-body">
@@ -25,7 +25,7 @@
       <!-- Pending -->
       <div class="stat-card">
         <div class="stat-header">
-          <span class="stat-label">QUEUE.PENDING</span>
+          <span class="stat-label">{{ t('stats.pending') }}</span>
           <div class="led yellow"></div>
         </div>
         <div class="stat-body">
@@ -45,7 +45,7 @@
       <!-- Running -->
       <div class="stat-card active">
         <div class="stat-header">
-          <span class="stat-label">PROC.RUNNING</span>
+          <span class="stat-label">{{ t('stats.running') }}</span>
           <div class="led green pulse"></div>
         </div>
         <div class="stat-body">
@@ -66,7 +66,7 @@
       <!-- Completed -->
       <div class="stat-card">
         <div class="stat-header">
-          <span class="stat-label">TASK.SUCCESS</span>
+          <span class="stat-label">{{ t('stats.completed') }}</span>
           <div class="led green"></div>
         </div>
         <div class="stat-body">
@@ -86,7 +86,7 @@
       <!-- Failed -->
       <div class="stat-card" :class="{ alert: animatedFailed > 0 }">
         <div class="stat-header">
-          <span class="stat-label">TASK.FAILED</span>
+          <span class="stat-label">{{ t('stats.failed') }}</span>
           <div class="led" :class="animatedFailed > 0 ? 'red pulse' : 'off'"></div>
         </div>
         <div class="stat-body">
@@ -108,23 +108,23 @@
     <div class="instance-bar">
       <div class="bar-title">
         <span class="title-icon">&gt;</span>
-        INSTANCE.STATUS
+        {{ t('stats.instanceStatus') }}
       </div>
       <div class="instance-stats">
         <div class="instance-stat">
           <div class="led green"></div>
           <span class="stat-count">{{ stats.instances.idle }}</span>
-          <span class="stat-name">IDLE</span>
+          <span class="stat-name">{{ t('stats.idle') }}</span>
         </div>
         <div class="instance-stat">
           <div class="led cyan pulse"></div>
           <span class="stat-count">{{ stats.instances.busy }}</span>
-          <span class="stat-name">BUSY</span>
+          <span class="stat-name">{{ t('stats.busy') }}</span>
         </div>
         <div class="instance-stat">
           <div class="led off"></div>
           <span class="stat-count">{{ stats.instances.offline }}</span>
-          <span class="stat-name">OFFLINE</span>
+          <span class="stat-name">{{ t('stats.offline') }}</span>
         </div>
       </div>
     </div>
@@ -135,9 +135,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
+import { useI18n } from '../i18n'
 
 const store = useMainStore()
 const { stats } = storeToRefs(store)
+const { t } = useI18n()
 
 // Animated values
 const animatedTotal = ref(0)

@@ -9,26 +9,25 @@
     <!-- Task Info -->
     <div class="task-info">
       <div class="task-header">
-        <span class="task-label">TASK_ID:</span>
         <span class="task-id">{{ task.id.substring(0, 12) }}</span>
         <div class="status-badge" :class="statusClass">
-          <span class="status-led"></span>
+          <span class="status-dot"></span>
           <span class="status-text">{{ task.status.toUpperCase() }}</span>
         </div>
       </div>
 
       <div class="task-meta">
         <div v-if="position" class="meta-item">
-          <span class="meta-label">POS:</span>
-          <span class="meta-value yellow">#{{ position }}</span>
+          <span class="meta-icon">📍</span>
+          <span class="meta-value highlight-yellow">#{{ position }}</span>
         </div>
         <div class="meta-item">
-          <span class="meta-label">TIME:</span>
+          <span class="meta-icon">⏱️</span>
           <span class="meta-value">{{ formatTime }}</span>
         </div>
         <div v-if="task.instance_id" class="meta-item">
-          <span class="meta-label">NODE:</span>
-          <span class="meta-value cyan">{{ task.instance_id.substring(0, 8) }}</span>
+          <span class="meta-icon">🖥️</span>
+          <span class="meta-value highlight-blue">{{ task.instance_id.substring(0, 8) }}</span>
         </div>
       </div>
     </div>
@@ -49,9 +48,6 @@
         ×
       </button>
     </div>
-
-    <!-- Status Line -->
-    <div class="status-line" :class="type"></div>
   </div>
 </template>
 
@@ -123,42 +119,32 @@ async function cancelTask() {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--cyber-darker);
-  border: 1px solid var(--border-dim);
-  transition: all 0.2s ease;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--clay-surface);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: var(--shadow-convex-sm);
+  transition: all 0.2s var(--transition-smooth);
+  overflow: hidden;
 }
 
 .task-card:hover {
-  border-color: var(--neon-green-dark);
-  box-shadow:
-    inset 0 0 20px rgba(0, 255, 159, 0.03),
-    0 0 10px rgba(0, 255, 159, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .task-card.high-priority {
-  background: linear-gradient(90deg, rgba(255, 0, 64, 0.1) 0%, var(--cyber-darker) 30%);
+  background: linear-gradient(90deg, rgba(255, 167, 167, 0.3) 0%, var(--clay-surface) 30%);
+  border-color: rgba(255, 167, 167, 0.5);
 }
 
-/* Status Line */
-.status-line {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
+.task-card.pending {
+  border-left: 4px solid var(--accent-yellow);
 }
 
-.status-line.pending {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 10px var(--neon-yellow);
-}
-
-.status-line.running {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan);
-  animation: pulse-glow 1.5s ease-in-out infinite;
+.task-card.running {
+  border-left: 4px solid var(--accent-blue);
 }
 
 /* Priority Badge */
@@ -166,35 +152,33 @@ async function cancelTask() {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  background: rgba(128, 128, 144, 0.1);
-  border: 1px solid var(--border-dim);
-  font-size: 11px;
-  font-weight: 600;
+  padding: 6px 10px;
+  background: var(--clay-surface);
+  border-radius: 12px;
+  box-shadow: var(--shadow-convex-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
   min-width: 50px;
   justify-content: center;
 }
 
 .priority-icon {
-  font-size: 10px;
+  font-size: 0.7rem;
 }
 
 .priority-badge.low {
-  color: var(--text-dim);
-  border-color: var(--text-dim);
+  color: var(--text-light);
 }
 
 .priority-badge.medium {
-  color: var(--neon-yellow);
-  border-color: rgba(255, 255, 0, 0.3);
-  background: rgba(255, 255, 0, 0.05);
+  color: var(--accent-yellow-dark);
+  background: var(--accent-yellow);
 }
 
 .priority-badge.high {
-  color: var(--neon-red);
-  border-color: rgba(255, 0, 64, 0.3);
-  background: rgba(255, 0, 64, 0.1);
-  animation: flicker 3s infinite;
+  color: #7a4238;
+  background: var(--accent-coral);
+  animation: pulseSoft 2s ease-in-out infinite;
 }
 
 /* Task Info */
@@ -206,21 +190,15 @@ async function cancelTask() {
 .task-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.task-label {
-  font-size: 9px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .task-id {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
   letter-spacing: 0.5px;
 }
 
@@ -228,69 +206,79 @@ async function cancelTask() {
 .status-badge {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
+  gap: 6px;
+  padding: 4px 10px;
   margin-left: auto;
-  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-convex-sm);
 }
 
-.status-led {
-  width: 5px;
-  height: 5px;
+.status-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--text-dim);
 }
 
 .status-badge.pending {
-  border-color: rgba(255, 255, 0, 0.3);
+  background: var(--accent-yellow);
 }
-.status-badge.pending .status-led {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 6px var(--neon-yellow);
+.status-badge.pending .status-dot {
+  background: #a88c30;
+  box-shadow: 0 0 6px #a88c30;
 }
 .status-badge.pending .status-text {
-  color: var(--neon-yellow);
+  color: #776530;
 }
 
 .status-badge.running {
-  border-color: rgba(0, 240, 255, 0.3);
+  background: var(--accent-blue);
 }
-.status-badge.running .status-led {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 6px var(--neon-cyan);
-  animation: breathe 1.5s ease-in-out infinite;
+.status-badge.running .status-dot {
+  background: #4a7ab5;
+  box-shadow: 0 0 6px #4a7ab5;
+  animation: pulseSoft 1.5s ease-in-out infinite;
 }
 .status-badge.running .status-text {
-  color: var(--neon-cyan);
+  color: #3d5a82;
 }
 
 .status-badge.success {
-  border-color: rgba(0, 255, 159, 0.3);
+  background: var(--accent-green);
 }
-.status-badge.success .status-led {
-  background: var(--neon-green);
-  box-shadow: 0 0 6px var(--neon-green);
+.status-badge.success .status-dot {
+  background: #4a9b6f;
+  box-shadow: 0 0 6px #4a9b6f;
 }
 .status-badge.success .status-text {
-  color: var(--neon-green);
+  color: #3d6b4f;
 }
 
 .status-badge.danger {
-  border-color: rgba(255, 0, 64, 0.3);
+  background: var(--accent-coral);
 }
-.status-badge.danger .status-led {
-  background: var(--neon-red);
-  box-shadow: 0 0 6px var(--neon-red);
+.status-badge.danger .status-dot {
+  background: #c45a4a;
+  box-shadow: 0 0 6px #c45a4a;
 }
 .status-badge.danger .status-text {
-  color: var(--neon-red);
+  color: #7a4238;
+}
+
+.status-badge.cancelled {
+  background: var(--bg-dark);
+}
+.status-badge.cancelled .status-dot {
+  background: var(--text-dim);
+}
+.status-badge.cancelled .status-text {
+  color: var(--text-dim);
 }
 
 .status-text {
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--text-dim);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 /* Task Meta */
@@ -302,22 +290,27 @@ async function cancelTask() {
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
+  gap: 5px;
+  font-size: 0.8rem;
 }
 
-.meta-label {
-  color: var(--text-dim);
-  letter-spacing: 0.5px;
+.meta-icon {
+  font-size: 0.7rem;
 }
 
 .meta-value {
-  color: var(--text-secondary);
-  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-light);
+  font-weight: 600;
 }
 
-.meta-value.yellow { color: var(--neon-yellow); }
-.meta-value.cyan { color: var(--neon-cyan); }
+.meta-value.highlight-yellow { 
+  color: var(--accent-yellow-dark);
+  font-weight: 700;
+}
+.meta-value.highlight-blue { 
+  color: var(--accent-blue-dark);
+  font-weight: 700;
+}
 
 /* Progress Indicator */
 .task-progress {
@@ -325,17 +318,23 @@ async function cancelTask() {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: rgba(0, 240, 255, 0.1);
+  height: 4px;
+  background: rgba(168, 198, 233, 0.3);
+  border-radius: 0 0 20px 20px;
   overflow: hidden;
 }
 
 .progress-bar {
   width: 30%;
   height: 100%;
-  background: var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan);
-  animation: h-scan 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  border-radius: 4px;
+  animation: progressScan 1.5s ease-in-out infinite;
+}
+
+@keyframes progressScan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
 }
 
 /* Actions */
@@ -344,27 +343,30 @@ async function cancelTask() {
 }
 
 .cancel-btn {
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid var(--border-dim);
-  color: var(--text-dim);
-  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  background: var(--clay-surface);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  box-shadow: var(--shadow-convex-sm);
+  color: var(--text-light);
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--transition-smooth);
 }
 
 .cancel-btn:hover {
-  border-color: var(--neon-red);
-  color: var(--neon-red);
-  box-shadow: 0 0 10px rgba(255, 0, 64, 0.3);
+  background: var(--accent-coral);
+  color: #7a4238;
+  transform: scale(1.05);
 }
 
 .cancel-btn:active {
-  transform: translateY(1px);
+  transform: scale(0.95);
+  box-shadow: var(--shadow-active);
 }
 </style>

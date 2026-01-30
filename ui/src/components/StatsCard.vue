@@ -3,126 +3,110 @@
     <!-- Stats Grid -->
     <div class="stats-grid">
       <!-- Total Tasks -->
-      <div class="stat-card">
-        <div class="stat-header">
+      <div class="stat-card blue">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-content">
           <span class="stat-label">{{ t('stats.totalTasks') }}</span>
-          <div class="led cyan"></div>
+          <span class="stat-value">{{ animatedTotal }}</span>
         </div>
-        <div class="stat-body">
-          <div class="stat-value cyan">{{ animatedTotal }}</div>
-          <div class="stat-bar">
-            <div class="bar-track">
-              <div class="bar-fill cyan" style="width: 100%"></div>
-            </div>
-          </div>
+        <div class="stat-bar">
+          <div class="bar-fill" style="width: 100%"></div>
         </div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
       </div>
 
       <!-- Pending -->
-      <div class="stat-card">
-        <div class="stat-header">
+      <div class="stat-card yellow">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-content">
           <span class="stat-label">{{ t('stats.pending') }}</span>
-          <div class="led yellow"></div>
+          <span class="stat-value">{{ animatedPending }}</span>
         </div>
-        <div class="stat-body">
-          <div class="stat-value yellow">{{ animatedPending }}</div>
-          <div class="stat-bar">
-            <div class="bar-track">
-              <div class="bar-fill yellow" :style="{ width: pendingPercent + '%' }"></div>
-            </div>
-          </div>
+        <div class="stat-bar">
+          <div class="bar-fill" :style="{ width: pendingPercent + '%' }"></div>
         </div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
       </div>
 
       <!-- Running -->
-      <div class="stat-card active">
-        <div class="stat-header">
+      <div class="stat-card purple active">
+        <div class="stat-icon pulse">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
           <span class="stat-label">{{ t('stats.running') }}</span>
-          <div class="led green pulse"></div>
+          <span class="stat-value">{{ animatedRunning }}</span>
         </div>
-        <div class="stat-body">
-          <div class="stat-value green">{{ animatedRunning }}</div>
-          <div class="stat-bar">
-            <div class="bar-track">
-              <div class="bar-fill green animated" :style="{ width: runningPercent + '%' }"></div>
-            </div>
-          </div>
+        <div class="stat-bar">
+          <div class="bar-fill animated" :style="{ width: runningPercent + '%' }"></div>
         </div>
-        <div class="scan-line"></div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
       </div>
 
       <!-- Completed -->
-      <div class="stat-card">
-        <div class="stat-header">
+      <div class="stat-card green">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-content">
           <span class="stat-label">{{ t('stats.completed') }}</span>
-          <div class="led green"></div>
+          <span class="stat-value">{{ animatedCompleted }}</span>
         </div>
-        <div class="stat-body">
-          <div class="stat-value green">{{ animatedCompleted }}</div>
-          <div class="stat-bar">
-            <div class="bar-track">
-              <div class="bar-fill green" :style="{ width: completedPercent + '%' }"></div>
-            </div>
-          </div>
+        <div class="stat-bar">
+          <div class="bar-fill" :style="{ width: completedPercent + '%' }"></div>
         </div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
       </div>
 
       <!-- Failed -->
-      <div class="stat-card" :class="{ alert: animatedFailed > 0 }">
-        <div class="stat-header">
+      <div class="stat-card coral" :class="{ alert: animatedFailed > 0 }">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="stat-content">
           <span class="stat-label">{{ t('stats.failed') }}</span>
-          <div class="led" :class="animatedFailed > 0 ? 'red pulse' : 'off'"></div>
+          <span class="stat-value">{{ animatedFailed }}</span>
         </div>
-        <div class="stat-body">
-          <div class="stat-value" :class="animatedFailed > 0 ? 'red' : 'dim'">{{ animatedFailed }}</div>
-          <div class="stat-bar">
-            <div class="bar-track">
-              <div class="bar-fill red" :style="{ width: failedPercent + '%' }"></div>
-            </div>
-          </div>
+        <div class="stat-bar">
+          <div class="bar-fill" :style="{ width: failedPercent + '%' }"></div>
         </div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
       </div>
     </div>
 
     <!-- Instance Status Bar -->
     <div class="instance-bar">
       <div class="bar-title">
-        <span class="title-icon">&gt;</span>
+        <span class="title-icon">📊</span>
         {{ t('stats.instanceStatus') }}
       </div>
       <div class="instance-stats">
         <div class="instance-stat">
-          <div class="led green"></div>
+          <span class="stat-dot green"></span>
           <span class="stat-count">{{ stats.instances.idle }}</span>
           <span class="stat-name">{{ t('stats.idle') }}</span>
         </div>
         <div class="instance-stat">
-          <div class="led cyan pulse"></div>
+          <span class="stat-dot purple pulse"></span>
           <span class="stat-count">{{ stats.instances.busy }}</span>
           <span class="stat-name">{{ t('stats.busy') }}</span>
         </div>
         <div class="instance-stat">
-          <div class="led off"></div>
+          <span class="stat-dot gray"></span>
           <span class="stat-count">{{ stats.instances.offline }}</span>
           <span class="stat-name">{{ t('stats.offline') }}</span>
         </div>
@@ -207,23 +191,26 @@ onMounted(() => {
 .stats-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
 
-/* Stat Card */
+/* Stat Card - Claymorphism Style */
 .stat-card {
   position: relative;
-  padding: 16px;
-  background: var(--cyber-panel);
-  border: 1px solid var(--border-dim);
-  transition: all 0.3s ease;
+  padding: 20px;
+  background: var(--clay-surface);
+  border-radius: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex);
+  transition: all 0.3s var(--transition-bounce);
+  overflow: hidden;
 }
 
 .stat-card::before {
@@ -232,183 +219,113 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--neon-green-dark), transparent);
+  height: 4px;
+  border-radius: 25px 25px 0 0;
 }
 
+.stat-card.blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+.stat-card.yellow::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-coral)); }
+.stat-card.purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+.stat-card.green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-mint)); }
+.stat-card.coral::before { background: linear-gradient(90deg, var(--accent-coral), var(--accent-pink)); }
+
 .stat-card:hover {
-  border-color: var(--neon-green-dark);
-  box-shadow:
-    inset 0 0 30px rgba(0, 255, 159, 0.05),
-    0 0 20px rgba(0, 255, 159, 0.1);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
 }
 
 .stat-card.active {
-  border-color: var(--neon-green);
-  animation: border-pulse 2s ease-in-out infinite;
+  animation: pulseSoft 2s ease-in-out infinite;
 }
 
 .stat-card.alert {
-  border-color: var(--neon-red);
+  animation: jelly 0.5s ease;
 }
 
-.stat-card.alert::before {
-  background: linear-gradient(90deg, var(--neon-red), transparent);
-}
-
-/* Corners */
-.corner {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-style: solid;
-  border-color: var(--neon-green-dark);
-  border-width: 0;
-}
-
-.corner.tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
-.corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
-.corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
-.corner.br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
-
-.stat-card:hover .corner {
-  border-color: var(--neon-green);
-}
-
-/* Scan Line Effect */
-.scan-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
-  animation: scan 2s linear infinite;
-  opacity: 0.5;
-}
-
-/* Stat Header */
-.stat-header {
+/* Stat Icon */
+.stat-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 15px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-convex-sm);
+}
+
+.stat-card.blue .stat-icon { background: var(--accent-blue); color: #43658b; }
+.stat-card.yellow .stat-icon { background: var(--accent-yellow); color: #7a5c2e; }
+.stat-card.purple .stat-icon { background: var(--accent-purple); color: #5a4669; }
+.stat-card.green .stat-icon { background: var(--accent-green); color: #3d6b4f; }
+.stat-card.coral .stat-icon { background: var(--accent-coral); color: #7a4238; }
+
+.stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stat-icon.pulse {
+  animation: pulseSoft 1.5s ease-in-out infinite;
+}
+
+/* Stat Content */
+.stat-content {
   margin-bottom: 12px;
 }
 
 .stat-label {
-  font-size: 10px;
+  display: block;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-}
-
-/* LED */
-.led {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.led.green {
-  background: var(--neon-green);
-  box-shadow: 0 0 8px var(--neon-green);
-}
-
-.led.cyan {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan);
-}
-
-.led.yellow {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 8px var(--neon-yellow);
-}
-
-.led.red {
-  background: var(--neon-red);
-  box-shadow: 0 0 8px var(--neon-red);
-}
-
-.led.off {
-  background: var(--text-dim);
-  box-shadow: none;
-}
-
-.led.pulse {
-  animation: breathe 1.5s ease-in-out infinite;
-}
-
-/* Stat Body */
-.stat-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  color: var(--text-light);
+  margin-bottom: 4px;
 }
 
 .stat-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
   line-height: 1;
-}
-
-.stat-value.green {
-  color: var(--neon-green);
-  text-shadow: 0 0 20px var(--neon-green);
-}
-
-.stat-value.cyan {
-  color: var(--neon-cyan);
-  text-shadow: 0 0 20px var(--neon-cyan);
-}
-
-.stat-value.yellow {
-  color: var(--neon-yellow);
-  text-shadow: 0 0 20px var(--neon-yellow);
-}
-
-.stat-value.red {
-  color: var(--neon-red);
-  text-shadow: 0 0 20px var(--neon-red);
-}
-
-.stat-value.dim {
-  color: var(--text-dim);
-  text-shadow: none;
 }
 
 /* Progress Bar */
 .stat-bar {
-  margin-top: 4px;
-}
-
-.bar-track {
-  height: 4px;
-  background: var(--cyber-darker);
-  position: relative;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-concave);
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  transition: width 0.5s ease;
+  border-radius: 8px;
+  transition: width 0.5s var(--transition-smooth);
   position: relative;
 }
 
-.bar-fill.green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
-.bar-fill.cyan { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
-.bar-fill.yellow { background: var(--neon-yellow); box-shadow: 0 0 10px var(--neon-yellow); }
-.bar-fill.red { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
+.stat-card.blue .bar-fill { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+.stat-card.yellow .bar-fill { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-coral)); }
+.stat-card.purple .bar-fill { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+.stat-card.green .bar-fill { background: linear-gradient(90deg, var(--accent-green), var(--accent-mint)); }
+.stat-card.coral .bar-fill { background: linear-gradient(90deg, var(--accent-coral), var(--accent-pink)); }
 
-.bar-fill.animated::after {
+.bar-fill::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: h-scan 1.5s ease-in-out infinite;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 8px 8px 0 0;
+}
+
+.bar-fill.animated {
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
 }
 
 /* Instance Bar */
@@ -416,23 +333,24 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
-  background: var(--cyber-panel);
-  border: 1px solid var(--border-dim);
+  padding: 16px 24px;
+  background: var(--clay-surface);
+  border-radius: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex);
 }
 
 .bar-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .title-icon {
-  color: var(--neon-green);
+  font-size: 1.2rem;
 }
 
 .instance-stats {
@@ -446,17 +364,31 @@ onMounted(() => {
   gap: 10px;
 }
 
+.stat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-dot.green { background: var(--accent-green); }
+.stat-dot.purple { background: var(--accent-purple); }
+.stat-dot.gray { background: var(--text-dim); }
+
+.stat-dot.pulse {
+  animation: pulseSoft 1.5s ease-in-out infinite;
+}
+
 .stat-count {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 .stat-name {
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
 /* Responsive */
@@ -473,7 +405,7 @@ onMounted(() => {
 
   .instance-bar {
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
   .instance-stats {

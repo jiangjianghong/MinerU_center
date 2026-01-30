@@ -3,18 +3,17 @@
     <!-- Panel Header -->
     <div class="panel-header">
       <div class="header-left">
-        <span class="header-icon">[</span>
+        <span class="header-icon">📋</span>
         <span class="header-title">{{ t('queue.title') }}</span>
-        <span class="header-icon">]</span>
       </div>
       <div class="header-badges">
-        <div class="badge yellow">
-          <span class="badge-led"></span>
+        <div class="badge pending">
+          <span class="badge-dot"></span>
           <span class="badge-count">{{ queuedTasks.length }}</span>
           <span class="badge-label">{{ t('queue.pending') }}</span>
         </div>
-        <div class="badge cyan">
-          <span class="badge-led"></span>
+        <div class="badge running">
+          <span class="badge-dot"></span>
           <span class="badge-count">{{ runningTasks.length }}</span>
           <span class="badge-label">{{ t('queue.running') }}</span>
         </div>
@@ -24,22 +23,26 @@
     <!-- Queue Progress -->
     <div class="queue-progress">
       <div class="progress-header">
-        <span class="progress-label">&gt; {{ t('queue.queueStatus') }}</span>
+        <span class="progress-label">{{ t('queue.queueStatus') }}</span>
         <span class="progress-value">{{ queuedTasks.length + runningTasks.length }} {{ t('queue.active') }}</span>
       </div>
       <div class="progress-track">
-        <div class="progress-fill pending" :style="{ width: pendingWidth }">
-          <div class="progress-glow"></div>
-        </div>
-        <div class="progress-fill running" :style="{ width: runningWidth }">
-          <div class="progress-glow"></div>
-        </div>
-        <div class="progress-scan"></div>
+        <div class="progress-fill pending" :style="{ width: pendingWidth }"></div>
+        <div class="progress-fill running" :style="{ width: runningWidth }"></div>
       </div>
       <div class="progress-legend">
-        <span class="legend-item yellow">{{ t('queue.pending') }}</span>
-        <span class="legend-item cyan">{{ t('queue.running') }}</span>
-        <span class="legend-item green">{{ t('stats.completed') }}</span>
+        <span class="legend-item pending">
+          <span class="legend-dot"></span>
+          {{ t('queue.pending') }}
+        </span>
+        <span class="legend-item running">
+          <span class="legend-dot"></span>
+          {{ t('queue.running') }}
+        </span>
+        <span class="legend-item completed">
+          <span class="legend-dot"></span>
+          {{ t('stats.completed') }}
+        </span>
       </div>
     </div>
 
@@ -48,9 +51,9 @@
       <!-- Running Tasks -->
       <div v-if="runningTasks.length > 0" class="task-group">
         <div class="group-header">
-          <span class="group-icon">&gt;</span>
+          <span class="group-icon">⚡</span>
           <span class="group-title">{{ t('queue.procActive') }}</span>
-          <div class="group-led cyan pulse"></div>
+          <div class="group-dot running pulse"></div>
         </div>
         <TransitionGroup name="task" tag="div" class="task-list">
           <TaskCard
@@ -65,9 +68,9 @@
       <!-- Pending Tasks -->
       <div v-if="queuedTasks.length > 0" class="task-group">
         <div class="group-header">
-          <span class="group-icon">&gt;</span>
+          <span class="group-icon">⏳</span>
           <span class="group-title">{{ t('queue.queueWaiting') }}</span>
-          <div class="group-led yellow"></div>
+          <div class="group-dot pending"></div>
         </div>
         <TransitionGroup name="task" tag="div" class="task-list">
           <TaskCard
@@ -82,18 +85,14 @@
 
       <!-- Empty State -->
       <div v-if="queuedTasks.length === 0 && runningTasks.length === 0" class="empty-state">
-        <div class="empty-terminal">
-          <div class="terminal-line">
-            <span class="prompt">&gt;</span>
-            <span class="cmd">queue.status()</span>
-          </div>
-          <div class="terminal-line output">
-            <span class="result">{{ t('queue.empty') }}</span>
-          </div>
-          <div class="terminal-line">
-            <span class="prompt">&gt;</span>
-            <span class="cmd">{{ t('queue.waitingForTasks') }}</span>
-            <span class="cursor"></span>
+        <div class="empty-card">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">{{ t('queue.empty') }}</div>
+          <div class="empty-subtitle">{{ t('queue.waitingForTasks') }}</div>
+          <div class="empty-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
           </div>
         </div>
       </div>
@@ -131,22 +130,14 @@ const runningWidth = computed(() => {
 
 <style scoped>
 .panel-container {
-  background: var(--cyber-panel);
-  border: 1px solid var(--border-dim);
-  height: calc(100vh - 280px);
+  background: var(--clay-surface);
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex);
+  height: calc(100vh - 520px);
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-
-.panel-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  overflow: hidden;
 }
 
 /* Panel Header */
@@ -154,26 +145,24 @@ const runningWidth = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-dim);
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
 .header-icon {
-  color: var(--neon-cyan);
-  font-weight: 700;
+  font-size: 1.3rem;
 }
 
 .header-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 2px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .header-badges {
@@ -185,148 +174,124 @@ const runningWidth = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid var(--border-dim);
+  padding: 8px 14px;
+  background: var(--clay-surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-convex-sm);
 }
 
-.badge.yellow {
-  border-color: rgba(255, 255, 0, 0.3);
-}
-
-.badge.cyan {
-  border-color: rgba(0, 240, 255, 0.3);
-}
-
-.badge-led {
-  width: 6px;
-  height: 6px;
+.badge-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
-.badge.yellow .badge-led {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 8px var(--neon-yellow);
+.badge.pending .badge-dot {
+  background: var(--accent-yellow);
+  box-shadow: 0 0 8px var(--accent-yellow);
 }
 
-.badge.cyan .badge-led {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan);
-  animation: breathe 1.5s ease-in-out infinite;
+.badge.running .badge-dot {
+  background: var(--accent-blue);
+  box-shadow: 0 0 8px var(--accent-blue);
+  animation: pulseSoft 1.5s ease-in-out infinite;
 }
 
 .badge-count {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
-.badge.yellow .badge-count { color: var(--neon-yellow); }
-.badge.cyan .badge-count { color: var(--neon-cyan); }
-
 .badge-label {
-  font-size: 9px;
-  letter-spacing: 1px;
-  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
 }
 
 /* Queue Progress */
 .queue-progress {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-dim);
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .progress-label {
-  font-size: 10px;
-  color: var(--neon-green);
-  letter-spacing: 1px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .progress-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-light);
 }
 
 .progress-track {
-  height: 6px;
-  background: var(--cyber-darker);
-  border: 1px solid var(--border-dim);
+  height: 12px;
+  background: var(--clay-surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow-concave);
   display: flex;
-  position: relative;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  position: relative;
-  transition: width 0.5s ease;
+  transition: width 0.5s var(--transition-bounce);
+  border-radius: 10px;
 }
 
 .progress-fill.pending {
-  background: var(--neon-yellow);
+  background: linear-gradient(135deg, var(--accent-yellow), #f8d66d);
 }
 
 .progress-fill.running {
-  background: var(--neon-cyan);
-}
-
-.progress-glow {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
-}
-
-.progress-scan {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  animation: h-scan 2s ease-in-out infinite;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
 }
 
 .progress-legend {
   display: flex;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 20px;
+  margin-top: 12px;
 }
 
 .legend-item {
-  font-size: 9px;
-  letter-spacing: 1px;
-  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
-.legend-item.yellow { color: var(--neon-yellow); }
-.legend-item.cyan { color: var(--neon-cyan); }
-.legend-item.green { color: var(--neon-green); }
-
-.legend-item::before {
-  content: '■';
-  margin-right: 4px;
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
+
+.legend-item.pending .legend-dot { background: var(--accent-yellow); }
+.legend-item.running .legend-dot { background: var(--accent-blue); }
+.legend-item.completed .legend-dot { background: var(--accent-green); }
 
 /* Tasks Container */
 .tasks-container {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: 20px 24px;
 }
 
 .task-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .task-group:last-child {
@@ -336,49 +301,47 @@ const runningWidth = computed(() => {
 .group-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-dim);
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
 }
 
 .group-icon {
-  color: var(--neon-green);
-  font-weight: 700;
+  font-size: 1rem;
 }
 
 .group-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
-.group-led {
-  width: 6px;
-  height: 6px;
+.group-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   margin-left: auto;
 }
 
-.group-led.cyan {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan);
+.group-dot.running {
+  background: var(--accent-blue);
+  box-shadow: 0 0 10px var(--accent-blue);
 }
 
-.group-led.yellow {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 8px var(--neon-yellow);
+.group-dot.pending {
+  background: var(--accent-yellow);
+  box-shadow: 0 0 10px var(--accent-yellow);
 }
 
-.group-led.pulse {
-  animation: breathe 1.5s ease-in-out infinite;
+.group-dot.pulse {
+  animation: pulseSoft 1.5s ease-in-out infinite;
 }
 
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 /* Empty State */
@@ -390,65 +353,80 @@ const runningWidth = computed(() => {
   padding: 40px;
 }
 
-.empty-terminal {
-  padding: 20px;
-  background: var(--cyber-darker);
-  border: 1px solid var(--border-dim);
-  min-width: 300px;
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 50px;
+  background: var(--clay-surface);
+  border-radius: 30px;
+  border: 2px dashed rgba(150, 160, 175, 0.3);
 }
 
-.terminal-line {
-  font-size: 12px;
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
   margin-bottom: 8px;
+}
+
+.empty-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+.empty-dots {
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.terminal-line:last-child {
-  margin-bottom: 0;
-}
-
-.terminal-line .prompt {
-  color: var(--neon-green);
-}
-
-.terminal-line .cmd {
-  color: var(--text-secondary);
-}
-
-.terminal-line.output {
-  padding-left: 16px;
-}
-
-.terminal-line .result {
-  color: var(--neon-yellow);
-}
-
-.cursor {
+.empty-dots .dot {
   width: 8px;
-  height: 14px;
-  background: var(--neon-green);
-  animation: blink 1s step-end infinite;
+  height: 8px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  animation: bounceIn 1.4s ease-in-out infinite;
+}
+
+.empty-dots .dot:nth-child(1) { animation-delay: 0s; }
+.empty-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+.empty-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounceIn {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
 }
 
 /* Transitions */
 .task-enter-active,
 .task-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--transition-bounce);
 }
 
 .task-enter-from {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-20px) scale(0.95);
 }
 
 .task-leave-to {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(20px) scale(0.95);
 }
 
 .task-move {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s var(--transition-smooth);
 }
 </style>

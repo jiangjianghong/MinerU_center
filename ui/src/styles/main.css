@@ -1,223 +1,246 @@
 /* ============================================
-   CYBERPUNK TERMINAL THEME
-   赛博朋克终端主题
+   CLAYMORPHISM DESIGN SYSTEM
+   黏土形态设计系统 - 蓬松感与悬浮感
    ============================================ */
 
-/* Import Terminal Font */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+/* Import Fonts - Nunito for soft, friendly feel */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
 :root {
-  /* Core Colors - 核心色彩 */
-  --cyber-black: #0a0a0f;
-  --cyber-dark: #0d0d14;
-  --cyber-darker: #08080c;
-  --cyber-panel: #0f0f18;
-  --cyber-surface: #14141f;
+  /* Palette: Pastel / Macaron Colors - 马卡龙色系 */
+  --bg-color: #e0e5ec;
+  --bg-light: #eef1f5;
+  --bg-dark: #d1d9e6;
 
-  /* Neon Colors - 霓虹色 */
-  --neon-green: #00ff9f;
-  --neon-green-dim: #00cc7f;
-  --neon-green-dark: #00995f;
-  --neon-cyan: #00f0ff;
-  --neon-cyan-dim: #00c0cc;
-  --neon-purple: #bf00ff;
-  --neon-purple-dim: #9900cc;
-  --neon-pink: #ff0080;
-  --neon-yellow: #ffff00;
-  --neon-orange: #ff6600;
-  --neon-red: #ff0040;
+  /* Text Colors */
+  --text-main: #4a5568;
+  --text-light: #718096;
+  --text-dim: #a0aec0;
 
-  /* Text Colors - 文字色 (高对比度) */
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0c0;
-  --text-dim: #707080;
-  --text-glow: #00ff9f;
+  /* Clay Surface */
+  --clay-surface: #e0e5ec;
+  --clay-surface-light: #eef1f5;
 
-  /* Glow Effects - 发光效果 */
-  --glow-green: 0 0 10px #00ff9f, 0 0 20px #00ff9f40, 0 0 40px #00ff9f20;
-  --glow-cyan: 0 0 10px #00f0ff, 0 0 20px #00f0ff40, 0 0 40px #00f0ff20;
-  --glow-purple: 0 0 10px #bf00ff, 0 0 20px #bf00ff40, 0 0 40px #bf00ff20;
-  --glow-red: 0 0 10px #ff0040, 0 0 20px #ff004040, 0 0 40px #ff004020;
-  --glow-yellow: 0 0 10px #ffff00, 0 0 20px #ffff0040, 0 0 40px #ffff0020;
+  /* Accent Colors - Pastel Macaron */
+  --accent-pink: #ffafcc;
+  --accent-pink-dark: #e891b0;
+  --accent-blue: #a2d2ff;
+  --accent-blue-dark: #7cb8e8;
+  --accent-purple: #cdb4db;
+  --accent-purple-dark: #b59ac4;
+  --accent-green: #b7e4c7;
+  --accent-green-dark: #95d4ab;
+  --accent-yellow: #ffd6a5;
+  --accent-yellow-dark: #f5c088;
+  --accent-coral: #ffb4a2;
+  --accent-coral-dark: #e8998a;
+  --accent-mint: #c7f9cc;
+  --accent-mint-dark: #a8e6b0;
 
-  /* Border & Lines - 边框线条 */
-  --border-dim: #1a1a2e;
-  --border-glow: #00ff9f30;
-  --scanline-color: rgba(0, 255, 159, 0.03);
+  /* Status Colors */
+  --status-success: #b7e4c7;
+  --status-warning: #ffd6a5;
+  --status-error: #ffb4a2;
+  --status-info: #a2d2ff;
+  --status-running: #cdb4db;
+
+  /* Shadow Variables - The Soul of Claymorphism */
+  /* Convex (Popping out - 凸起效果) */
+  --shadow-convex:
+    9px 9px 16px rgba(163, 177, 198, 0.6),
+    -9px -9px 16px rgba(255, 255, 255, 0.5),
+    inset 5px 5px 10px rgba(163, 177, 198, 0.2),
+    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+
+  /* Convex Small - 小尺寸凸起 */
+  --shadow-convex-sm:
+    5px 5px 10px rgba(163, 177, 198, 0.5),
+    -5px -5px 10px rgba(255, 255, 255, 0.5),
+    inset 2px 2px 5px rgba(163, 177, 198, 0.15),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.4);
+
+  /* Concave (Pressed in / Input fields - 凹陷效果) */
+  --shadow-concave:
+    inset 6px 6px 10px rgba(163, 177, 198, 0.7),
+    inset -6px -6px 10px rgba(255, 255, 255, 0.8);
+
+  /* Floating Hover State - 悬停浮起 */
+  --shadow-hover:
+    14px 14px 24px rgba(163, 177, 198, 0.6),
+    -14px -14px 24px rgba(255, 255, 255, 0.5),
+    inset 5px 5px 10px rgba(163, 177, 198, 0.2),
+    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+
+  /* Active / Pressed State - 按压效果 */
+  --shadow-active:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.5),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+
+  /* Transitions */
+  --transition-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  --transition-smooth: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Reset & Base */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
-  font-size: 14px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
-  background: var(--cyber-black);
-  color: var(--text-primary);
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
   line-height: 1.6;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-/* Scrollbar - 滚动条 */
+/* Scrollbar - 柔软滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--cyber-dark);
+  background: var(--bg-dark);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--neon-green-dark);
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border-radius: 10px;
+  border: 2px solid var(--bg-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--neon-green);
-  box-shadow: var(--glow-green);
+  background: linear-gradient(135deg, var(--accent-blue-dark), var(--accent-purple-dark));
 }
 
 /* Selection */
 ::selection {
-  background: var(--neon-green);
-  color: var(--cyber-black);
+  background: var(--accent-pink);
+  color: var(--text-main);
+}
+
+/* ============================================
+   TYPOGRAPHY
+   排版
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
 /* ============================================
    ANIMATIONS
-   动画效果
+   动画效果 - 弹性与果冻感
    ============================================ */
 
-/* Blink Cursor */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-/* Pulse Glow */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-  50% {
-    opacity: 0.7;
-    filter: brightness(1.3);
-  }
-}
-
-/* Breathing LED */
-@keyframes breathe {
-  0%, 100% {
-    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
-    opacity: 0.8;
-  }
-  50% {
-    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
-    opacity: 1;
-  }
-}
-
-/* Scan Line Move */
-@keyframes scan {
-  0% { top: 0; }
-  100% { top: 100%; }
-}
-
-/* Glitch Effect */
-@keyframes glitch {
-  0%, 90%, 100% {
-    transform: translate(0);
-    filter: none;
-  }
-  91% {
-    transform: translate(-2px, 1px);
-    filter: hue-rotate(90deg);
-  }
-  92% {
-    transform: translate(2px, -1px);
-    filter: hue-rotate(-90deg);
-  }
-  93% {
-    transform: translate(-1px, 2px);
-  }
-}
-
-/* Data Stream */
-@keyframes dataStream {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 1000px; }
-}
-
-/* Neon Flicker */
-@keyframes flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-    opacity: 1;
-  }
-  20%, 24%, 55% {
-    opacity: 0.6;
-  }
-}
-
-/* Progress Bar Animation */
-@keyframes progress-scan {
-  0% { left: -30%; }
-  100% { left: 100%; }
-}
-
-/* Float Animation */
+/* Float Animation - 漂浮动画 */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+    border-radius: 45% 55% 40% 60% / 50% 60% 40% 50%;
+  }
+  33% {
+    transform: translate(0, -15px) rotate(3deg);
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+  }
+  66% {
+    transform: translate(0, 8px) rotate(-3deg);
+    border-radius: 60% 40% 60% 40% / 40% 60% 40% 60%;
+  }
 }
 
-/* Matrix Rain */
-@keyframes matrix-fall {
+/* Bounce In - 弹跳进入 */
+@keyframes bounceIn {
   0% {
-    transform: translateY(-100%);
-    opacity: 1;
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
   }
   100% {
-    transform: translateY(100vh);
-    opacity: 0;
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Border Glow Pulse */
-@keyframes border-pulse {
-  0%, 100% {
-    border-color: var(--neon-green-dark);
-    box-shadow: inset 0 0 20px rgba(0, 255, 159, 0.05);
+/* Jelly Effect - 果冻效果 */
+@keyframes jelly {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(0.95, 1.05);
   }
   50% {
-    border-color: var(--neon-green);
-    box-shadow: inset 0 0 30px rgba(0, 255, 159, 0.1), 0 0 20px rgba(0, 255, 159, 0.1);
+    transform: scale(1.05, 0.95);
+  }
+  75% {
+    transform: scale(0.98, 1.02);
   }
 }
 
-/* Typing Effect */
-@keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
+/* Pulse Soft - 柔和脉冲 */
+@keyframes pulseSoft {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+  }
 }
 
-/* Horizontal Scan */
-@keyframes h-scan {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* Fade In Up */
-@keyframes fadeInUp {
+/* Slide Up - 上滑进入 */
+@keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -228,75 +251,77 @@ body {
   }
 }
 
-/* Slide In */
-@keyframes slideIn {
+/* Fade In */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(-20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Scale In */
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
 /* Spin */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Progress Shimmer - 进度条光泽 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* ============================================
    ELEMENT PLUS OVERRIDES
-   Element Plus 覆盖
+   Element Plus 覆盖 - Claymorphism 风格
    ============================================ */
 
 .el-message {
-  background: var(--cyber-panel) !important;
-  border: 1px solid var(--neon-green-dim) !important;
-  border-radius: 0 !important;
-  box-shadow: var(--glow-green) !important;
+  background: var(--clay-surface) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 25px !important;
+  box-shadow: var(--shadow-convex) !important;
+  padding: 12px 20px !important;
 }
 
 .el-message--success {
-  border-color: var(--neon-green) !important;
+  background: var(--status-success) !important;
 }
 
 .el-message--success .el-message__content {
-  color: var(--neon-green) !important;
+  color: #3d6b4f !important;
 }
 
 .el-message--warning {
-  border-color: var(--neon-yellow) !important;
+  background: var(--status-warning) !important;
 }
 
 .el-message--warning .el-message__content {
-  color: var(--neon-yellow) !important;
+  color: #7a5c2e !important;
 }
 
 .el-message--error {
-  border-color: var(--neon-red) !important;
+  background: var(--status-error) !important;
 }
 
 .el-message--error .el-message__content {
-  color: var(--neon-red) !important;
+  color: #7a4238 !important;
 }
 
 .el-message__content {
-  color: var(--text-primary) !important;
-  font-family: 'JetBrains Mono', monospace !important;
+  color: var(--text-main) !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-weight: 600 !important;
 }
 
 .el-message__icon {

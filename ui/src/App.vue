@@ -1,17 +1,12 @@
 <template>
-  <div id="app" class="cyber-app">
-    <!-- Matrix Rain Background -->
-    <div class="matrix-bg">
-      <div v-for="i in 20" :key="i" class="matrix-column" :style="{ left: `${i * 5}%`, animationDelay: `${Math.random() * 5}s`, animationDuration: `${10 + Math.random() * 10}s` }">
-        <span v-for="j in 30" :key="j">{{ randomChar() }}</span>
-      </div>
+  <div id="app" class="clay-app">
+    <!-- Decorative Background Shapes -->
+    <div class="bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+      <div class="shape shape-4"></div>
     </div>
-
-    <!-- Grid Pattern -->
-    <div class="grid-pattern"></div>
-
-    <!-- Scanlines -->
-    <div class="scanlines"></div>
 
     <!-- Main Content -->
     <Dashboard />
@@ -20,23 +15,18 @@
 
 <script setup>
 import Dashboard from './views/Dashboard.vue'
-
-function randomChar() {
-  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'
-  return chars[Math.floor(Math.random() * chars.length)]
-}
 </script>
 
 <style>
-.cyber-app {
+.clay-app {
   min-height: 100vh;
-  background: #0a0a0f;
+  background: var(--bg-color);
   position: relative;
   overflow: hidden;
 }
 
-/* Matrix Rain */
-.matrix-bg {
+/* Decorative Background Shapes - 装饰性背景形状 */
+.bg-shapes {
   position: fixed;
   top: 0;
   left: 0;
@@ -45,71 +35,51 @@ function randomChar() {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  opacity: 0.15;
 }
 
-.matrix-column {
+.shape {
   position: absolute;
-  top: -100%;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  color: #00ff9f;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  animation: matrix-fall 20s linear infinite;
-  text-shadow: 0 0 10px #00ff9f;
+  border-radius: 45% 55% 40% 60% / 50% 60% 40% 50%;
+  opacity: 0.4;
+  animation: float 12s ease-in-out infinite;
+  box-shadow:
+    15px 15px 30px rgba(163, 177, 198, 0.3),
+    -15px -15px 30px rgba(255, 255, 255, 0.3);
 }
 
-.matrix-column span {
-  display: block;
-  opacity: 0.8;
+.shape-1 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  top: -150px;
+  right: -100px;
+  animation-delay: 0s;
 }
 
-@keyframes matrix-fall {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(200vh);
-  }
+.shape-2 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-coral));
+  bottom: -100px;
+  left: -80px;
+  animation-delay: 2s;
 }
 
-/* Grid Pattern */
-.grid-pattern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(0, 255, 159, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 159, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
+.shape-3 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-mint));
+  top: 40%;
+  right: 5%;
+  animation-delay: 4s;
 }
 
-/* Scanlines */
-.scanlines {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9998;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
-  );
-}
-
-/* Ensure main content is above effects */
-.cyber-app > :not(.matrix-bg):not(.grid-pattern):not(.scanlines) {
-  position: relative;
-  z-index: 1;
+.shape-4 {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-coral));
+  bottom: 30%;
+  left: 10%;
+  animation-delay: 6s;
 }
 </style>

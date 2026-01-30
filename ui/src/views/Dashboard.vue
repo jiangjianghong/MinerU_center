@@ -1,54 +1,51 @@
 <template>
   <div class="dashboard">
-    <!-- Header Terminal Bar -->
-    <header class="cyber-header">
+    <!-- Header -->
+    <header class="clay-header">
       <div class="header-left">
         <div class="logo-container">
           <div class="logo-icon">
-            <div class="logo-hex"></div>
-            <span class="logo-text">M</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
           </div>
-          <div class="logo-info">
-            <h1 class="logo-title">{{ t('dashboard.title') }}<span class="blink">_</span></h1>
-            <div class="logo-subtitle">
-              <span class="terminal-prompt">&gt;</span>
-              <span class="typing-text">{{ t('dashboard.subtitle') }}</span>
-            </div>
+          <div class="logo-text">
+            <h1>{{ t('dashboard.title') }}</h1>
+            <p>{{ t('dashboard.subtitle') }}</p>
           </div>
         </div>
       </div>
 
       <div class="header-center">
-        <div class="system-time">
-          <span class="time-label">{{ t('dashboard.sysTime') }}</span>
+        <div class="time-display">
+          <span class="time-icon">🕐</span>
           <span class="time-value">{{ currentTime }}</span>
         </div>
       </div>
 
       <div class="header-right">
         <!-- Connection Status -->
-        <div class="status-indicator" :class="{ connected: wsConnected }">
-          <div class="led" :class="wsConnected ? 'green' : 'red'"></div>
+        <div class="status-pill" :class="{ connected: wsConnected }">
+          <span class="status-dot"></span>
           <span class="status-text">{{ wsConnected ? t('dashboard.linkOk') : t('dashboard.offline') }}</span>
         </div>
 
-        <!-- Divider -->
-        <div class="header-divider"></div>
-
-        <!-- Control Buttons -->
-        <button class="cyber-btn-icon" @click="toggleLocale" :title="locale === 'zh' ? 'EN' : '中'">
-          <span class="btn-label">{{ locale === 'zh' ? '中' : 'EN' }}</span>
+        <!-- Action Buttons -->
+        <button class="clay-btn-icon" @click="toggleLocale" :title="locale === 'zh' ? 'English' : '中文'">
+          {{ locale === 'zh' ? '中' : 'EN' }}
         </button>
 
-        <button class="cyber-btn-icon" @click="showConfig = true" :title="t('common.config')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <button class="clay-btn-icon" @click="showConfig = true" :title="t('common.config')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
 
-        <button class="cyber-btn-icon" @click="refresh" :class="{ active: isRefreshing }" :title="t('common.refresh')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" :class="{ spin: isRefreshing }">
+        <button class="clay-btn-icon" @click="refresh" :class="{ spinning: isRefreshing }" :title="t('common.refresh')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M23 4v6h-6M1 20v-6h6"/>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
           </svg>
@@ -58,7 +55,7 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Stats Overview - Terminal Style -->
+      <!-- Stats Overview -->
       <section class="stats-section">
         <StatsCard />
       </section>
@@ -75,11 +72,11 @@
       </div>
     </main>
 
-    <!-- Footer Status Bar -->
-    <footer class="cyber-footer">
+    <!-- Footer -->
+    <footer class="clay-footer">
       <div class="footer-left">
         <span class="footer-item">
-          <span class="led green"></span>
+          <span class="status-dot success"></span>
           {{ t('dashboard.sysReady') }}
         </span>
       </div>
@@ -147,33 +144,27 @@ onUnmounted(() => {
   padding: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 /* ============================================
-   HEADER
+   HEADER - Claymorphism Style
    ============================================ */
-.cyber-header {
+.clay-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 24px;
-  background: linear-gradient(180deg, rgba(15, 15, 24, 0.95) 0%, rgba(10, 10, 15, 0.9) 100%);
-  border-bottom: 1px solid var(--neon-green-dark);
+  padding: 16px 32px;
+  background: var(--clay-surface);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 20px rgba(163, 177, 198, 0.4),
+    inset 0 -2px 5px rgba(163, 177, 198, 0.2),
+    inset 0 2px 5px rgba(255, 255, 255, 0.5);
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
-}
-
-.cyber-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
-  opacity: 0.5;
 }
 
 /* Logo */
@@ -184,92 +175,56 @@ onUnmounted(() => {
 }
 
 .logo-icon {
-  width: 48px;
-  height: 48px;
-  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  box-shadow: var(--shadow-convex-sm);
 }
 
-.logo-hex {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--neon-green-dark) 0%, transparent 50%);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  border: 1px solid var(--neon-green);
-  animation: breathe 3s ease-in-out infinite;
+.logo-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
-.logo-text {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--neon-green);
-  text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
-  z-index: 1;
+.logo-text h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
-.logo-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--neon-green);
-  letter-spacing: 4px;
-  text-shadow: 0 0 10px var(--neon-green);
+.logo-text p {
+  font-size: 0.85rem;
+  color: var(--text-light);
   margin: 0;
 }
 
-.logo-title .blink {
-  animation: blink 1s step-end infinite;
-}
-
-.logo-subtitle {
-  font-size: 11px;
-  color: var(--text-secondary);
-  letter-spacing: 2px;
+/* Time Display */
+.time-display {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--clay-surface);
+  border-radius: 25px;
+  box-shadow: var(--shadow-concave);
 }
 
-.terminal-prompt {
-  color: var(--neon-cyan);
-}
-
-.typing-text {
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-/* Header Center */
-.header-center {
-  display: flex;
-  align-items: center;
-}
-
-.system-time {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 20px;
-  background: rgba(0, 255, 159, 0.05);
-  border: 1px solid var(--neon-green-dark);
-}
-
-.time-label {
-  font-size: 9px;
-  color: var(--text-dim);
-  letter-spacing: 2px;
+.time-icon {
+  font-size: 1.1rem;
 }
 
 .time-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 18px;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 10px var(--neon-cyan);
-  letter-spacing: 2px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 1px;
 }
 
 /* Header Right */
@@ -279,116 +234,72 @@ onUnmounted(() => {
   gap: 12px;
 }
 
-.status-indicator {
+/* Status Pill */
+.status-pill {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: rgba(255, 0, 64, 0.1);
-  border: 1px solid var(--neon-red);
+  padding: 10px 18px;
+  background: var(--accent-coral);
+  border-radius: 25px;
+  box-shadow: var(--shadow-convex-sm);
+  transition: all 0.3s ease;
 }
 
-.status-indicator.connected {
-  background: rgba(0, 255, 159, 0.1);
-  border-color: var(--neon-green);
+.status-pill.connected {
+  background: var(--accent-green);
 }
 
-.led {
+.status-pill .status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  animation: pulseSoft 2s ease-in-out infinite;
 }
 
-.led.green {
-  background: var(--neon-green);
-  box-shadow: 0 0 10px var(--neon-green);
-  animation: breathe 2s ease-in-out infinite;
+.status-pill .status-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
 }
 
-.led.red {
-  background: var(--neon-red);
-  box-shadow: 0 0 10px var(--neon-red);
-  animation: breathe 1s ease-in-out infinite;
-}
-
-.status-text {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--neon-red);
-}
-
-.status-indicator.connected .status-text {
-  color: var(--neon-green);
-}
-
-.header-divider {
-  width: 1px;
-  height: 30px;
-  background: var(--border-dim);
-}
-
-/* Control Buttons */
-.cyber-btn-icon {
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 1px solid var(--border-dim);
-  color: var(--text-secondary);
+/* Icon Buttons */
+.clay-btn-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--clay-surface);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex-sm);
+  color: var(--text-main);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.cyber-btn-icon::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 159, 0.1), transparent);
-  transition: left 0.3s ease;
-}
-
-.cyber-btn-icon:hover {
-  border-color: var(--neon-green);
-  color: var(--neon-green);
-  box-shadow: 0 0 15px rgba(0, 255, 159, 0.3), inset 0 0 15px rgba(0, 255, 159, 0.1);
-}
-
-.cyber-btn-icon:hover::before {
-  left: 100%;
-}
-
-.cyber-btn-icon:active {
-  transform: translateY(2px);
-  box-shadow: none;
-}
-
-.cyber-btn-icon.active {
-  border-color: var(--neon-cyan);
-  color: var(--neon-cyan);
-}
-
-.cyber-btn-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.cyber-btn-icon svg.spin {
-  animation: spin 1s linear infinite;
-}
-
-.btn-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-family: 'Nunito', sans-serif;
   font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 0.9rem;
+  transition: all 0.2s var(--transition-smooth);
+}
+
+.clay-btn-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.clay-btn-icon:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.clay-btn-icon:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-active);
+}
+
+.clay-btn-icon.spinning svg {
+  animation: spin 1s linear infinite;
 }
 
 /* ============================================
@@ -396,45 +307,35 @@ onUnmounted(() => {
    ============================================ */
 .main-content {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
 }
 
 .stats-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .content-grid {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 24px;
+  grid-template-columns: 420px 1fr;
+  gap: 32px;
 }
 
 /* ============================================
    FOOTER
    ============================================ */
-.cyber-footer {
+.clay-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 24px;
-  background: rgba(15, 15, 24, 0.95);
-  border-top: 1px solid var(--border-dim);
-  font-size: 11px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-}
-
-.cyber-footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--neon-green-dark), transparent);
+  padding: 12px 32px;
+  background: var(--clay-surface);
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 -4px 15px rgba(163, 177, 198, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.4);
 }
 
 .footer-left,
@@ -447,12 +348,21 @@ onUnmounted(() => {
 .footer-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
-.footer-item .led {
-  width: 6px;
-  height: 6px;
+.footer-item .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.footer-item .status-dot.success {
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
 }
 
 /* ============================================
@@ -465,20 +375,25 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .cyber-header {
+  .clay-header {
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 16px;
+    padding: 16px;
   }
 
   .header-center {
     order: 3;
     width: 100%;
+    display: flex;
     justify-content: center;
   }
 
   .main-content {
-    padding: 16px;
+    padding: 20px;
+  }
+
+  .logo-text h1 {
+    font-size: 1.25rem;
   }
 }
 </style>

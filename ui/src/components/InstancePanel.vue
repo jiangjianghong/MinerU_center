@@ -3,9 +3,8 @@
     <!-- Panel Header -->
     <div class="panel-header">
       <div class="header-left">
-        <span class="header-icon">[</span>
+        <span class="header-icon">🖥️</span>
         <span class="header-title">{{ t('instances.title') }}</span>
-        <span class="header-icon">]</span>
       </div>
       <button class="add-btn" @click="showAddDialog = true">
         <span class="btn-icon">+</span>
@@ -22,34 +21,35 @@
           class="server-card"
           :class="[instance.status, { disabled: !instance.enabled }]"
         >
-          <!-- Server Status LED Bar -->
-          <div class="status-bar" :class="instance.status"></div>
+          <!-- Status Indicator -->
+          <div class="status-indicator" :class="instance.status">
+            <span class="status-dot"></span>
+          </div>
 
           <!-- Server Info -->
           <div class="server-main">
             <div class="server-header">
-              <div class="server-id">
-                <span class="id-prefix">NODE_</span>
-                <span class="id-value">{{ String(index + 1).padStart(2, '0') }}</span>
+              <div class="server-name">
+                <span class="name-label">节点</span>
+                <span class="name-value">{{ String(index + 1).padStart(2, '0') }}</span>
               </div>
               <div class="status-badge" :class="instance.status">
-                <span class="status-led"></span>
-                <span class="status-text">{{ instance.status.toUpperCase() }}</span>
+                {{ instance.status.toUpperCase() }}
               </div>
             </div>
 
             <div class="server-details">
               <div class="detail-row">
-                <span class="detail-label">{{ t('instances.name') }}:</span>
+                <span class="detail-icon">📛</span>
                 <span class="detail-value">{{ instance.name }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">{{ t('instances.url') }}:</span>
-                <span class="detail-value mono">{{ instance.url }}</span>
+                <span class="detail-icon">🔗</span>
+                <span class="detail-value url">{{ instance.url }}</span>
               </div>
               <div v-if="instance.current_task_id" class="detail-row active">
-                <span class="detail-label">TASK:</span>
-                <span class="detail-value mono">{{ instance.current_task_id.substring(0, 12) }}...</span>
+                <span class="detail-icon">⚡</span>
+                <span class="detail-value">{{ instance.current_task_id.substring(0, 12) }}...</span>
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@
               @click="toggleInstance(instance.id, !instance.enabled)"
               :title="instance.enabled ? t('common.disable') : t('common.enable')"
             >
-              <span class="ctrl-icon">{{ instance.enabled ? '||' : '▶' }}</span>
+              {{ instance.enabled ? '⏸' : '▶' }}
             </button>
             <button
               class="ctrl-btn danger"
@@ -70,31 +70,18 @@
               :disabled="!!instance.current_task_id"
               :title="t('common.remove')"
             >
-              <span class="ctrl-icon">×</span>
+              🗑️
             </button>
           </div>
-
-          <!-- Corner Decorations -->
-          <div class="corner tl"></div>
-          <div class="corner tr"></div>
-          <div class="corner bl"></div>
-          <div class="corner br"></div>
         </div>
       </TransitionGroup>
 
       <!-- Empty State -->
       <div v-if="instances.length === 0" class="empty-state">
-        <div class="empty-ascii">
-          <pre>
-  ┌─────────────────┐
-  │  {{ t('instances.noInstances').padEnd(15) }}  │
-  │                 │
-  │  [+ ADD NODE]   │
-  └─────────────────┘
-          </pre>
-        </div>
+        <div class="empty-icon">🖥️</div>
+        <p class="empty-text">{{ t('instances.noInstances') }}</p>
         <button class="add-btn-empty" @click="showAddDialog = true">
-          <span>+ {{ t('instances.initNode') }}</span>
+          + {{ t('instances.initNode') }}
         </button>
       </div>
     </div>
@@ -107,9 +94,8 @@
             <!-- Modal Header -->
             <div class="modal-header">
               <div class="modal-title">
-                <span class="title-bracket">[</span>
+                <span class="title-icon">🖥️</span>
                 <span>{{ t('instances.newNode') }}</span>
-                <span class="title-bracket">]</span>
               </div>
               <button class="close-btn" @click="showAddDialog = false">×</button>
             </div>
@@ -117,20 +103,20 @@
             <!-- Modal Body -->
             <div class="modal-body">
               <div class="form-group">
-                <label class="form-label">&gt; {{ t('instances.nodeName') }}</label>
+                <label class="form-label">{{ t('instances.nodeName') }}</label>
                 <input
                   v-model="newInstance.name"
                   type="text"
-                  class="cyber-input"
+                  class="clay-input"
                   placeholder="MinerU-Server-01"
                 />
               </div>
               <div class="form-group">
-                <label class="form-label">&gt; {{ t('instances.nodeAddr') }}</label>
+                <label class="form-label">{{ t('instances.nodeAddr') }}</label>
                 <input
                   v-model="newInstance.url"
                   type="text"
-                  class="cyber-input"
+                  class="clay-input"
                   placeholder="http://192.168.1.100:8080"
                 />
               </div>
@@ -138,19 +124,13 @@
 
             <!-- Modal Footer -->
             <div class="modal-footer">
-              <button class="cyber-btn secondary" @click="showAddDialog = false">
+              <button class="clay-btn neutral" @click="showAddDialog = false">
                 {{ t('common.cancel') }}
               </button>
-              <button class="cyber-btn primary" @click="addInstance">
+              <button class="clay-btn primary" @click="addInstance">
                 {{ t('instances.connect') }}
               </button>
             </div>
-
-            <!-- Modal Corners -->
-            <div class="corner tl"></div>
-            <div class="corner tr"></div>
-            <div class="corner bl"></div>
-            <div class="corner br"></div>
           </div>
         </div>
       </Transition>
@@ -209,22 +189,14 @@ async function toggleInstance(id, enable) {
 
 <style scoped>
 .panel-container {
-  background: var(--cyber-panel);
-  border: 1px solid var(--border-dim);
-  height: calc(100vh - 280px);
+  background: var(--clay-surface);
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex);
+  height: calc(100vh - 520px);
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-
-.panel-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--neon-green), transparent);
+  overflow: hidden;
 }
 
 /* Panel Header */
@@ -232,120 +204,120 @@ async function toggleInstance(id, enable) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-dim);
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
 .header-icon {
-  color: var(--neon-green);
-  font-weight: 700;
+  font-size: 1.3rem;
 }
 
 .header-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 2px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .add-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid var(--neon-green-dark);
-  color: var(--neon-green);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-convex-sm);
+  transition: all 0.2s var(--transition-smooth);
 }
 
 .add-btn:hover {
-  background: rgba(0, 255, 159, 0.1);
-  border-color: var(--neon-green);
-  box-shadow: 0 0 15px rgba(0, 255, 159, 0.3), inset 0 0 15px rgba(0, 255, 159, 0.1);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
 }
 
 .add-btn:active {
-  transform: translateY(2px);
+  transform: translateY(0);
+  box-shadow: var(--shadow-active);
 }
 
 .btn-icon {
-  font-size: 14px;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 /* Instances List */
 .instances-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-/* Server Card */
+/* Server Card - Claymorphism */
 .server-card {
   position: relative;
   display: flex;
   align-items: stretch;
-  background: var(--cyber-darker);
-  border: 1px solid var(--border-dim);
-  transition: all 0.3s ease;
+  background: var(--clay-surface);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: var(--shadow-convex-sm);
+  transition: all 0.3s var(--transition-bounce);
+  overflow: hidden;
 }
 
 .server-card:hover {
-  border-color: var(--neon-green-dark);
-  box-shadow:
-    inset 0 0 30px rgba(0, 255, 159, 0.03),
-    0 0 15px rgba(0, 255, 159, 0.1);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
 
 .server-card.disabled {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
-/* Status Bar */
-.status-bar {
-  width: 4px;
-  background: var(--text-dim);
-  flex-shrink: 0;
+/* Status Indicator */
+.status-indicator {
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px 0 0 20px;
 }
 
-.status-bar.idle {
-  background: var(--neon-green);
-  box-shadow: 0 0 10px var(--neon-green);
+.status-indicator.idle { background: var(--accent-green); }
+.status-indicator.busy { background: var(--accent-purple); }
+.status-indicator.error { background: var(--accent-coral); }
+.status-indicator.offline { background: var(--text-dim); }
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
-.status-bar.busy {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan);
-  animation: pulse-glow 1.5s ease-in-out infinite;
-}
-
-.status-bar.error {
-  background: var(--neon-red);
-  box-shadow: 0 0 10px var(--neon-red);
-}
-
-.status-bar.offline {
-  background: var(--text-dim);
+.status-indicator.busy .status-dot {
+  animation: pulseSoft 1.5s ease-in-out infinite;
 }
 
 /* Server Main */
 .server-main {
   flex: 1;
-  padding: 14px 16px;
+  padding: 16px 20px;
   min-width: 0;
 }
 
@@ -353,195 +325,138 @@ async function toggleInstance(id, enable) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.server-id {
+.server-name {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 6px;
 }
 
-.id-prefix {
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
+.name-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-weight: 600;
 }
 
-.id-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 10px var(--neon-cyan);
+.name-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 /* Status Badge */
 .status-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(128, 128, 144, 0.1);
-  border: 1px solid var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .status-badge.idle {
-  background: rgba(0, 255, 159, 0.1);
-  border-color: var(--neon-green-dark);
+  background: var(--accent-green);
+  color: #3d6b4f;
 }
 
 .status-badge.busy {
-  background: rgba(0, 240, 255, 0.1);
-  border-color: var(--neon-cyan-dim);
+  background: var(--accent-purple);
+  color: #5a4669;
 }
 
 .status-badge.error {
-  background: rgba(255, 0, 64, 0.1);
-  border-color: var(--neon-red);
+  background: var(--accent-coral);
+  color: #7a4238;
 }
 
-.status-led {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-dim);
+.status-badge.offline {
+  background: var(--bg-dark);
+  color: var(--text-dim);
 }
-
-.status-badge.idle .status-led {
-  background: var(--neon-green);
-  box-shadow: 0 0 8px var(--neon-green);
-}
-
-.status-badge.busy .status-led {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan);
-  animation: breathe 1.5s ease-in-out infinite;
-}
-
-.status-badge.error .status-led {
-  background: var(--neon-red);
-  box-shadow: 0 0 8px var(--neon-red);
-}
-
-.status-text {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--text-secondary);
-}
-
-.status-badge.idle .status-text { color: var(--neon-green); }
-.status-badge.busy .status-text { color: var(--neon-cyan); }
-.status-badge.error .status-text { color: var(--neon-red); }
 
 /* Server Details */
 .server-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .detail-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 0.85rem;
 }
 
-.detail-label {
-  color: var(--text-dim);
-  letter-spacing: 1px;
-  min-width: 50px;
+.detail-icon {
+  font-size: 0.9rem;
 }
 
 .detail-value {
-  color: var(--text-secondary);
+  color: var(--text-light);
+  font-weight: 600;
 }
 
-.detail-value.mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+.detail-value.url {
+  font-family: monospace;
+  font-size: 0.8rem;
 }
 
 .detail-row.active {
-  color: var(--neon-cyan);
+  color: var(--accent-purple-dark);
 }
 
-.detail-row.active .detail-label,
 .detail-row.active .detail-value {
-  color: var(--neon-cyan);
+  color: var(--accent-purple-dark);
 }
 
 /* Server Controls */
 .server-controls {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border-dim);
+  padding: 8px;
+  gap: 6px;
 }
 
 .ctrl-btn {
-  flex: 1;
-  width: 40px;
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
+  width: 36px;
+  height: 36px;
+  background: var(--clay-surface);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: var(--shadow-convex-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid var(--border-dim);
-}
-
-.ctrl-btn:last-child {
-  border-bottom: none;
+  font-size: 0.9rem;
+  transition: all 0.2s var(--transition-smooth);
 }
 
 .ctrl-btn:hover {
-  background: rgba(0, 255, 159, 0.1);
-  color: var(--neon-green);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.ctrl-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-active);
 }
 
 .ctrl-btn.active {
-  color: var(--neon-green);
+  background: var(--accent-green);
 }
 
 .ctrl-btn.danger:hover {
-  background: rgba(255, 0, 64, 0.1);
-  color: var(--neon-red);
+  background: var(--accent-coral);
 }
 
 .ctrl-btn:disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
-
-.ctrl-icon {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* Corners */
-.corner {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-style: solid;
-  border-color: var(--neon-green-dark);
-  border-width: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.server-card:hover .corner {
-  opacity: 1;
-}
-
-.corner.tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
-.corner.tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
-.corner.bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
-.corner.br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
 
 /* Empty State */
 .empty-state {
@@ -550,44 +465,47 @@ async function toggleInstance(id, enable) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
+  padding: 40px;
 }
 
-.empty-ascii {
-  color: var(--text-dim);
-  font-size: 12px;
+.empty-icon {
+  font-size: 3rem;
+  opacity: 0.5;
 }
 
-.empty-ascii pre {
-  margin: 0;
-  line-height: 1.4;
+.empty-text {
+  font-size: 1rem;
+  color: var(--text-light);
+  font-weight: 600;
 }
 
 .add-btn-empty {
-  padding: 12px 24px;
-  background: transparent;
-  border: 1px dashed var(--neon-green-dark);
-  color: var(--neon-green-dim);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 1px;
+  padding: 14px 28px;
+  background: var(--clay-surface);
+  border: 2px dashed var(--accent-blue);
+  border-radius: 25px;
+  color: var(--accent-blue-dark);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--transition-smooth);
 }
 
 .add-btn-empty:hover {
   border-style: solid;
-  border-color: var(--neon-green);
-  color: var(--neon-green);
-  box-shadow: 0 0 20px rgba(0, 255, 159, 0.2);
+  background: var(--accent-blue);
+  color: #43658b;
+  box-shadow: var(--shadow-convex-sm);
 }
 
-/* Modal */
+/* Modal - Claymorphism */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
+  background: rgba(224, 229, 236, 0.8);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -598,57 +516,54 @@ async function toggleInstance(id, enable) {
   position: relative;
   width: 90%;
   max-width: 450px;
-  background: var(--cyber-panel);
-  border: 1px solid var(--neon-green-dark);
-}
-
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+  background: var(--clay-surface);
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-convex);
+  overflow: hidden;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-dim);
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
-.title-bracket {
-  color: var(--neon-green);
+.title-icon {
+  font-size: 1.2rem;
 }
 
 .close-btn {
-  width: 30px;
-  height: 30px;
-  background: transparent;
-  border: 1px solid var(--border-dim);
-  color: var(--text-secondary);
-  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  background: var(--clay-surface);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  box-shadow: var(--shadow-convex-sm);
+  color: var(--text-light);
+  font-size: 1.25rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--transition-smooth);
 }
 
 .close-btn:hover {
-  border-color: var(--neon-red);
-  color: var(--neon-red);
+  background: var(--accent-coral);
+  color: #7a4238;
 }
 
 .modal-body {
-  padding: 24px 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -657,107 +572,104 @@ async function toggleInstance(id, enable) {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .form-label {
-  font-size: 11px;
-  color: var(--neon-green);
-  letter-spacing: 1px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  padding-left: 10px;
 }
 
-.cyber-input {
-  padding: 12px 14px;
-  background: var(--cyber-darker);
-  border: 1px solid var(--border-dim);
-  color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+.clay-input {
+  padding: 14px 18px;
+  background: var(--clay-surface);
+  border: none;
+  border-radius: 20px;
+  box-shadow: var(--shadow-concave);
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
   outline: none;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease;
 }
 
-.cyber-input::placeholder {
+.clay-input::placeholder {
   color: var(--text-dim);
+  font-weight: 500;
 }
 
-.cyber-input:focus {
-  border-color: var(--neon-green);
+.clay-input:focus {
   box-shadow:
-    inset 0 0 10px rgba(0, 255, 159, 0.1),
-    0 0 10px rgba(0, 255, 159, 0.2);
+    inset 8px 8px 12px rgba(163, 177, 198, 0.8),
+    inset -8px -8px 12px rgba(255, 255, 255, 0.9);
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-dim);
+  padding: 20px 24px;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.cyber-btn {
-  padding: 10px 24px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1px;
+.clay-btn {
+  padding: 12px 24px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 25px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-convex-sm);
+  transition: all 0.2s var(--transition-smooth);
 }
 
-.cyber-btn.secondary {
-  background: transparent;
-  border: 1px solid var(--border-dim);
-  color: var(--text-secondary);
+.clay-btn.neutral {
+  background: var(--clay-surface);
+  color: var(--text-light);
 }
 
-.cyber-btn.secondary:hover {
-  border-color: var(--text-secondary);
-  background: rgba(128, 128, 144, 0.1);
+.clay-btn.neutral:hover {
+  transform: translateY(-2px);
 }
 
-.cyber-btn.primary {
-  background: transparent;
-  border: 1px solid var(--neon-green);
-  color: var(--neon-green);
+.clay-btn.primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white;
 }
 
-.cyber-btn.primary:hover {
-  background: rgba(0, 255, 159, 0.1);
-  box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+.clay-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
 }
 
-.cyber-btn:active {
-  transform: translateY(2px);
-}
-
-.modal-content .corner {
-  opacity: 1;
-  width: 10px;
-  height: 10px;
-  border-color: var(--neon-green);
+.clay-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-active);
 }
 
 /* Transitions */
 .server-enter-active,
 .server-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--transition-bounce);
 }
 
 .server-enter-from {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-20px) scale(0.95);
 }
 
 .server-leave-to {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(20px) scale(0.95);
 }
 
 .modal-enter-active,
 .modal-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s var(--transition-smooth);
 }
 
 .modal-enter-from,
@@ -767,6 +679,6 @@ async function toggleInstance(id, enable) {
 
 .modal-enter-from .modal-content,
 .modal-leave-to .modal-content {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 </style>

@@ -40,6 +40,12 @@ class InstanceCreate(BaseModel):
     backend: BackendType = BackendType.PIPELINE
 
 
+class InstanceUpdate(BaseModel):
+    name: str | None = None
+    url: str | None = None
+    backend: BackendType | None = None
+
+
 class InstanceResponse(BaseModel):
     id: str
     name: str

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Annotated
 
-from ..models.instance import MinerUInstance, InstanceCreate, InstanceResponse, InstanceStatus
+from ..models.instance import MinerUInstance, InstanceCreate, InstanceUpdate, InstanceResponse, InstanceStatus
 from ..services.instance_pool import InstancePool
 from ..services import database
 
@@ -94,6 +94,57 @@ async def remove_instance(
         await database.delete_instance(instance_id)
         return {"message": "Instance removed", "instance_id": instance_id}
     raise HTTPException(status_code=404, detail="Instance not found")
+
+
+@router.patch("/{instance_id}", response_model=InstanceResponse)
+async def update_instance(
+    instance_id: str,
+    instance_update: InstanceUpdate,
+    pool: Annotated[InstancePool, Depends(get_instance_pool)]
+):
+    """Update an instance configuration."""
+    instance = pool.get_instance(instance_id)
+    if not instance:
+        raise HTTPException(status_code=404, detail="Instance not found")
+
+    # Cannot update URL while instance has a running task
+    if instance_update.url and instance.current_task_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot update URL while instance has running task"
+        )
+
+    # Update in pool
+    updated = pool.update_instance(
+        instance_id,
+        name=instance_update.name,
+        url=instance_update.url,
+        backend=str(instance_update.backend) if instance_update.backend else None
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Instance not found")
+
+    # Persist to SQLite
+    await database.update_instance_config(
+        instance_id,
+        name=instance_update.name,
+        url=instance_update.url,
+        backend=str(instance_update.backend) if instance_update.backend else None
+    )
+
+    return InstanceResponse(
+        id=updated.id,
+        name=updated.name,
+        url=updated.url,
+        status=updated.status,
+        current_task_id=updated.current_task_id,
+        total_tasks=updated.total_tasks,
+        failed_tasks=updated.failed_tasks,
+        last_heartbeat=updated.last_heartbeat,
+        enabled=updated.enabled,
+        backend=str(updated.backend)
+    )
 
 
 @router.post("/{instance_id}/enable")

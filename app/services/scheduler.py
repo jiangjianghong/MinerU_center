@@ -226,18 +226,33 @@ class Scheduler:
                         self._task_futures[task.id].set_result(task)
                 logger.warning(f"Task {task.id} timed out in queue")
 
+    def pre_register_task_future(self, task_id: str) -> None:
+        """Pre-register a future for a task before enqueueing.
+
+        This avoids the race condition where a task completes before
+        wait_for_task is called.
+        """
+        if task_id not in self._task_futures:
+            self._task_futures[task_id] = asyncio.get_event_loop().create_future()
+
     async def wait_for_task(self, task_id: str) -> Task | None:
         """Wait for task to complete and return result."""
         async with self._lock:
+            # Check if a pre-registered future is already resolved
+            if task_id in self._task_futures and self._task_futures[task_id].done():
+                future = self._task_futures.pop(task_id)
+                return future.result()
+
             if task_id in self._running_tasks:
                 task = self._running_tasks[task_id]
             else:
                 task = self.queue.get(task_id)
 
             if not task:
-                return None
-
-            if task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.TIMEOUT, TaskStatus.CANCELLED]:
+                # If a pre-registered future exists, wait for it
+                if task_id not in self._task_futures:
+                    return None
+            elif task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.TIMEOUT, TaskStatus.CANCELLED]:
                 return task
 
             if task_id not in self._task_futures:

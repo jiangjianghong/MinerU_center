@@ -32,6 +32,8 @@ export const instancesApi = {
 
   add: (name, url, backend = 'pipeline') => api.post('/instances', { name, url, backend }),
 
+  update: (instanceId, data) => api.patch(`/instances/${instanceId}`, data),
+
   remove: (instanceId) => api.delete(`/instances/${instanceId}`),
 
   enable: (instanceId) => api.post(`/instances/${instanceId}/enable`),

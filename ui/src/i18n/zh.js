@@ -8,6 +8,7 @@ export default {
     remove: '移除',
     enable: '启用',
     disable: '禁用',
+    edit: '编辑',
     connected: '已连接',
     disconnected: '已断开'
   },
@@ -66,7 +67,10 @@ export default {
     initNode: '初始化节点',
     backend: '后端引擎',
     backendPipeline: 'Pipeline (CPU)',
-    backendVllm: 'vLLM Async Engine (GPU)'
+    backendVllm: 'vLLM Async Engine (GPU)',
+    editNode: '编辑服务器节点',
+    updateSuccess: '节点更新成功',
+    cannotEditUrl: '运行任务中，无法修改地址'
   },
   queue: {
     title: '任务队列',

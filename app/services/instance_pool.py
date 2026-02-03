@@ -45,6 +45,22 @@ class InstancePool:
                 return True
             return False
 
+    def update_instance(self, instance_id: str, name: str | None = None,
+                        url: str | None = None, backend: str | None = None) -> MinerUInstance | None:
+        """Update instance configuration."""
+        with self._lock:
+            if instance_id not in self._instances:
+                return None
+            instance = self._instances[instance_id]
+            if name is not None:
+                instance.name = name
+            if url is not None:
+                instance.url = url.rstrip("/")
+            if backend is not None:
+                instance.backend = BackendType(backend)
+            self._notify_change()
+            return instance
+
     def get_instance(self, instance_id: str) -> MinerUInstance | None:
         """Get instance by ID."""
         with self._lock:

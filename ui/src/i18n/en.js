@@ -8,6 +8,7 @@ export default {
     remove: 'Remove',
     enable: 'Enable',
     disable: 'Disable',
+    edit: 'Edit',
     connected: 'Connected',
     disconnected: 'Disconnected'
   },
@@ -66,7 +67,10 @@ export default {
     initNode: 'INITIALIZE NODE',
     backend: 'BACKEND.ENGINE',
     backendPipeline: 'Pipeline (CPU)',
-    backendVllm: 'vLLM Async Engine (GPU)'
+    backendVllm: 'vLLM Async Engine (GPU)',
+    editNode: 'EDIT.SERVER.NODE',
+    updateSuccess: 'Node updated',
+    cannotEditUrl: 'Cannot edit URL while task is running'
   },
   queue: {
     title: 'TASK.QUEUE',

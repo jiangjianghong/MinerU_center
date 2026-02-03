@@ -7,7 +7,8 @@ class MinerUClient:
 
     def __init__(self, base_url: str, timeout: int = 300):
         self.base_url = base_url.rstrip("/")
-        self.timeout = timeout
+        # Add extra buffer to httpx timeout so asyncio.wait_for fires first
+        self.timeout = timeout + 10
 
     async def submit_task(self, payload: dict[str, Any], instance_backend: str | None = None) -> dict[str, Any]:
         """Submit a task to MinerU instance.

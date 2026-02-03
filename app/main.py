@@ -154,8 +154,18 @@ async def mineru_compatible_file_parse(request: Request):
     body = await request.json()
     async_mode = body.pop("async", False)
 
+    # Check queue size limit
+    if queue_manager.size() >= config.max_queue_size:
+        return {"error": "Queue is full", "status": "error"}
+
     # Create a task with the payload
     task = Task(payload=body)
+
+    # For sync mode, pre-register the future before enqueueing
+    # to avoid race condition where task completes before wait_for_task
+    if not async_mode:
+        scheduler.pre_register_task_future(task.id)
+
     queue_manager.enqueue(task)
 
     if async_mode:

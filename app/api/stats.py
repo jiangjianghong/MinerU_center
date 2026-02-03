@@ -35,9 +35,10 @@ async def get_stats(
     instances = pool.get_all()
     running_tasks = sched.get_all_running_tasks()
     queued_tasks = queue.get_all()
+    failed_tasks_list = sched.get_all_failed_tasks()
 
     total_tasks = sum(inst.total_tasks for inst in instances)
-    failed_tasks = sum(inst.failed_tasks for inst in instances)
+    historical_failed = sum(inst.failed_tasks for inst in instances)
 
     idle_instances = sum(1 for inst in instances if inst.status == "idle" and inst.enabled)
     busy_instances = sum(1 for inst in instances if inst.status == "busy")
@@ -50,8 +51,8 @@ async def get_stats(
         },
         "tasks": {
             "total": total_tasks,
-            "completed": total_tasks - failed_tasks,
-            "failed": failed_tasks
+            "completed": total_tasks - historical_failed,
+            "failed": len(failed_tasks_list)  # Current pending failed tasks
         },
         "instances": {
             "total": len(instances),
@@ -102,9 +103,10 @@ async def websocket_endpoint(
             instances = pool.get_all()
             running_tasks = sched.get_all_running_tasks()
             queued_tasks = queue.get_all()
+            failed_tasks_list = sched.get_all_failed_tasks()
 
             total_tasks = sum(inst.total_tasks for inst in instances)
-            failed_tasks = sum(inst.failed_tasks for inst in instances)
+            historical_failed = sum(inst.failed_tasks for inst in instances)
 
             stats = {
                 "type": "stats",
@@ -115,8 +117,8 @@ async def websocket_endpoint(
                     },
                     "tasks": {
                         "total": total_tasks,
-                        "completed": total_tasks - failed_tasks,
-                        "failed": failed_tasks
+                        "completed": total_tasks - historical_failed,
+                        "failed": len(failed_tasks_list)  # Current pending failed tasks
                     },
                     "instances": [
                         {
@@ -159,7 +161,7 @@ async def websocket_endpoint(
                             "created_at": task.created_at.isoformat(),
                             "completed_at": task.completed_at.isoformat() if task.completed_at else None,
                         }
-                        for task in sched.get_all_failed_tasks()
+                        for task in failed_tasks_list
                     ]
                 }
             }

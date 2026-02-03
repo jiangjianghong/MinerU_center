@@ -84,6 +84,17 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
+  async function updateInstance(instanceId, data) {
+    try {
+      await instancesApi.update(instanceId, data)
+      await fetchInstances()
+      return true
+    } catch (error) {
+      console.error('Failed to update instance:', error)
+      return false
+    }
+  }
+
   async function removeInstance(instanceId) {
     try {
       await instancesApi.remove(instanceId)
@@ -194,6 +205,7 @@ export const useMainStore = defineStore('main', () => {
     fetchConfig,
     updateConfig,
     addInstance,
+    updateInstance,
     removeInstance,
     toggleInstance,
     connectWebSocket,

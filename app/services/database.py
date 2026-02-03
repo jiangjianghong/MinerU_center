@@ -135,6 +135,33 @@ async def update_instance_enabled(instance_id: str, enabled: bool) -> None:
         await db.commit()
 
 
+async def update_instance_config(instance_id: str, name: str | None = None,
+                                  url: str | None = None, backend: str | None = None) -> None:
+    """Update instance configuration (name, url, backend)."""
+    updates = []
+    params = []
+    if name is not None:
+        updates.append("name = ?")
+        params.append(name)
+    if url is not None:
+        updates.append("url = ?")
+        params.append(url)
+    if backend is not None:
+        updates.append("backend = ?")
+        params.append(backend)
+
+    if not updates:
+        return
+
+    params.append(instance_id)
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            f"UPDATE instances SET {', '.join(updates)} WHERE id = ?",
+            tuple(params)
+        )
+        await db.commit()
+
+
 async def update_instance_stats(instance_id: str, total_tasks: int, failed_tasks: int) -> None:
     """Update instance task statistics."""
     async with aiosqlite.connect(DB_PATH) as db:

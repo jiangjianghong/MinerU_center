@@ -62,6 +62,13 @@
           <div class="server-controls">
             <button
               class="ctrl-btn"
+              @click="openEditDialog(instance)"
+              :title="t('common.edit')"
+            >
+              ✏️
+            </button>
+            <button
+              class="ctrl-btn"
               :class="instance.enabled ? 'active' : ''"
               @click="toggleInstance(instance.id, !instance.enabled)"
               :title="instance.enabled ? t('common.disable') : t('common.enable')"
@@ -162,6 +169,83 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Edit Dialog -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showEditDialog" class="modal-overlay" @click.self="showEditDialog = false">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <div class="modal-title">
+                <span class="title-icon">✏️</span>
+                <span>{{ t('instances.editNode') }}</span>
+              </div>
+              <button class="close-btn" @click="showEditDialog = false">×</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">{{ t('instances.nodeName') }}</label>
+                <input
+                  v-model="editInstance.name"
+                  type="text"
+                  class="clay-input"
+                  placeholder="MinerU-Server-01"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('instances.nodeAddr') }}</label>
+                <input
+                  v-model="editInstance.url"
+                  type="text"
+                  class="clay-input"
+                  placeholder="http://192.168.1.100:8080"
+                  :disabled="editInstance.hasRunningTask"
+                />
+                <span v-if="editInstance.hasRunningTask" class="form-hint">
+                  {{ t('instances.cannotEditUrl') }}
+                </span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('instances.backend') }}</label>
+                <div class="backend-selector">
+                  <button
+                    type="button"
+                    class="backend-option"
+                    :class="{ active: editInstance.backend === 'pipeline' }"
+                    @click="editInstance.backend = 'pipeline'"
+                  >
+                    <span class="backend-label">Pipeline</span>
+                    <span class="backend-desc">CPU</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="backend-option"
+                    :class="{ active: editInstance.backend === 'vllm-async-engine' }"
+                    @click="editInstance.backend = 'vllm-async-engine'"
+                  >
+                    <span class="backend-label">vLLM</span>
+                    <span class="backend-desc">GPU</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button class="clay-btn neutral" @click="showEditDialog = false">
+                {{ t('common.cancel') }}
+              </button>
+              <button class="clay-btn primary" @click="saveEditInstance">
+                {{ t('common.save') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -178,6 +262,40 @@ const { t } = useI18n()
 
 const showAddDialog = ref(false)
 const newInstance = reactive({ name: '', url: '', backend: 'pipeline' })
+
+const showEditDialog = ref(false)
+const editInstance = reactive({ id: '', name: '', url: '', backend: 'pipeline', hasRunningTask: false })
+
+function openEditDialog(instance) {
+  editInstance.id = instance.id
+  editInstance.name = instance.name
+  editInstance.url = instance.url
+  editInstance.backend = instance.backend || 'pipeline'
+  editInstance.hasRunningTask = !!instance.current_task_id
+  showEditDialog.value = true
+}
+
+async function saveEditInstance() {
+  if (!editInstance.name || !editInstance.url) {
+    ElMessage.warning(t('instances.fillAllFields'))
+    return
+  }
+  const data = {
+    name: editInstance.name,
+    backend: editInstance.backend
+  }
+  // Only include URL if no running task
+  if (!editInstance.hasRunningTask) {
+    data.url = editInstance.url
+  }
+  const success = await store.updateInstance(editInstance.id, data)
+  if (success) {
+    ElMessage.success(t('instances.updateSuccess'))
+    showEditDialog.value = false
+  } else {
+    ElMessage.error(t('instances.updateFailed'))
+  }
+}
 
 async function addInstance() {
   if (!newInstance.name || !newInstance.url) {
@@ -639,6 +757,18 @@ async function toggleInstance(id, enable) {
   box-shadow:
     inset 8px 8px 12px rgba(163, 177, 198, 0.8),
     inset -8px -8px 12px rgba(255, 255, 255, 0.9);
+}
+
+.clay-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--accent-coral);
+  padding-left: 10px;
+  margin-top: 6px;
 }
 
 .modal-footer {

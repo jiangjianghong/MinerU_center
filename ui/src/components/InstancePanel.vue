@@ -128,6 +128,7 @@
                 <label class="form-label">{{ t('instances.backend') }}</label>
                 <div class="backend-selector">
                   <button
+                    type="button"
                     class="backend-option"
                     :class="{ active: newInstance.backend === 'pipeline' }"
                     @click="newInstance.backend = 'pipeline'"
@@ -136,6 +137,7 @@
                     <span class="backend-desc">CPU</span>
                   </button>
                   <button
+                    type="button"
                     class="backend-option"
                     :class="{ active: newInstance.backend === 'vllm-async-engine' }"
                     @click="newInstance.backend = 'vllm-async-engine'"
@@ -327,6 +329,7 @@ async function toggleInstance(id, enable) {
 .status-indicator.busy { background: var(--accent-purple); }
 .status-indicator.error { background: var(--accent-coral); }
 .status-indicator.offline { background: var(--text-dim); }
+.status-indicator.disabled { background: var(--text-dim); }
 
 .status-dot {
   width: 12px;
@@ -397,6 +400,11 @@ async function toggleInstance(id, enable) {
 }
 
 .status-badge.offline {
+  background: var(--bg-dark);
+  color: var(--text-dim);
+}
+
+.status-badge.disabled {
   background: var(--bg-dark);
   color: var(--text-dim);
 }

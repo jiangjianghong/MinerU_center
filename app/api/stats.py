@@ -122,10 +122,11 @@ async def websocket_endpoint(
                         {
                             "id": inst.id,
                             "name": inst.name,
+                            "url": inst.url,
                             "status": inst.status,
                             "current_task_id": inst.current_task_id,
                             "enabled": inst.enabled,
-                            "backend": inst.backend
+                            "backend": str(inst.backend)
                         }
                         for inst in instances
                     ],

@@ -30,7 +30,7 @@ async def list_instances(
             failed_tasks=inst.failed_tasks,
             last_heartbeat=inst.last_heartbeat,
             enabled=inst.enabled,
-            backend=inst.backend
+            backend=str(inst.backend)
         )
         for inst in instances
     ]
@@ -45,7 +45,7 @@ async def add_instance(
     instance = pool.add_instance(
         url=instance_create.url,
         name=instance_create.name,
-        backend=instance_create.backend
+        backend=str(instance_create.backend)
     )
 
     # Persist to SQLite
@@ -56,7 +56,7 @@ async def add_instance(
         enabled=instance.enabled,
         total_tasks=instance.total_tasks,
         failed_tasks=instance.failed_tasks,
-        backend=instance.backend
+        backend=str(instance.backend)
     )
 
     return InstanceResponse(
@@ -69,7 +69,7 @@ async def add_instance(
         failed_tasks=instance.failed_tasks,
         last_heartbeat=instance.last_heartbeat,
         enabled=instance.enabled,
-        backend=instance.backend
+        backend=str(instance.backend)
     )
 
 

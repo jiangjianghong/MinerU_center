@@ -140,3 +140,43 @@ async def cancel_task(
     if await sched.cancel_task(task_id):
         return {"message": "Task cancelled", "task_id": task_id}
     raise HTTPException(status_code=404, detail="Task not found or already completed")
+
+
+@router.get("/failed/list")
+async def list_failed_tasks(
+    sched: Annotated[Scheduler, Depends(get_scheduler)]
+):
+    """Get list of all failed tasks."""
+    tasks = []
+    for task in sched.get_all_failed_tasks():
+        tasks.append({
+            "task_id": task.id,
+            "status": task.status,
+            "priority": task.priority,
+            "payload": task.payload,
+            "error": task.error,
+            "retry_count": task.retry_count,
+            "created_at": task.created_at.isoformat(),
+            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+        })
+    return {"tasks": tasks, "total": len(tasks)}
+
+
+@router.post("/{task_id}/retry")
+async def retry_task(
+    task_id: str,
+    sched: Annotated[Scheduler, Depends(get_scheduler)]
+):
+    """Retry a single failed task."""
+    if await sched.retry_failed_task(task_id):
+        return {"message": "Task requeued for retry", "task_id": task_id}
+    raise HTTPException(status_code=404, detail="Failed task not found")
+
+
+@router.post("/retry-all")
+async def retry_all_tasks(
+    sched: Annotated[Scheduler, Depends(get_scheduler)]
+):
+    """Retry all failed tasks."""
+    count = await sched.retry_all_failed_tasks()
+    return {"message": f"Requeued {count} tasks for retry", "count": count}

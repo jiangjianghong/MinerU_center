@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Callable
 import httpx
 
-from ..models.instance import MinerUInstance, InstanceStatus
+from ..models.instance import MinerUInstance, InstanceStatus, BackendType
 
 
 class InstancePool:
@@ -27,9 +27,10 @@ class InstancePool:
             except Exception:
                 pass
 
-    def add_instance(self, url: str, name: str) -> MinerUInstance:
+    def add_instance(self, url: str, name: str, backend: str = "pipeline") -> MinerUInstance:
         """Add a new instance to the pool."""
-        instance = MinerUInstance(name=name, url=url.rstrip("/"))
+        backend_type = BackendType(backend) if backend else BackendType.PIPELINE
+        instance = MinerUInstance(name=name, url=url.rstrip("/"), backend=backend_type)
         with self._lock:
             self._instances[instance.id] = instance
             self._notify_change()

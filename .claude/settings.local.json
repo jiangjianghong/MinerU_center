@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(uv sync:*)",
-      "Bash(uv run python:*)"
+      "Bash(uv run python:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

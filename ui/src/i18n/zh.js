@@ -63,7 +63,10 @@ export default {
     nodeName: '节点名称',
     nodeAddr: '节点地址',
     connect: '连接',
-    initNode: '初始化节点'
+    initNode: '初始化节点',
+    backend: '后端引擎',
+    backendPipeline: 'Pipeline (CPU)',
+    backendVllm: 'vLLM Async Engine (GPU)'
   },
   queue: {
     title: '任务队列',
@@ -105,5 +108,20 @@ export default {
     secondsAgo: '{n}秒前',
     minutesAgo: '{n}分钟前',
     hoursAgo: '{n}小时前'
+  },
+  failedTasks: {
+    title: '失败任务列表',
+    empty: '暂无失败任务',
+    retryAll: '全部重试',
+    retry: '重试',
+    error: '错误信息',
+    retryCount: '已重试',
+    times: '次',
+    retrySuccess: '任务已重新加入队列',
+    retryFailed: '重试失败',
+    retryAllSuccess: '已重新加入 {n} 个任务',
+    payload: '任务参数',
+    createdAt: '创建时间',
+    failedAt: '失败时间'
   }
 }

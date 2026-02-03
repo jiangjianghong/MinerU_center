@@ -124,7 +124,8 @@ async def websocket_endpoint(
                             "name": inst.name,
                             "status": inst.status,
                             "current_task_id": inst.current_task_id,
-                            "enabled": inst.enabled
+                            "enabled": inst.enabled,
+                            "backend": inst.backend
                         }
                         for inst in instances
                     ],
@@ -146,6 +147,18 @@ async def websocket_endpoint(
                             "status": task.status
                         }
                         for task in running_tasks
+                    ],
+                    "failed_tasks": [
+                        {
+                            "id": task.id,
+                            "priority": task.priority,
+                            "payload": task.payload,
+                            "error": task.error,
+                            "retry_count": task.retry_count,
+                            "created_at": task.created_at.isoformat(),
+                            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                        }
+                        for task in sched.get_all_failed_tasks()
                     ]
                 }
             }

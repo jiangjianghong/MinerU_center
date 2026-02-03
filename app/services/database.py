@@ -38,6 +38,12 @@ async def init_database() -> None:
             )
         """)
 
+        # Migrate: add backend column if missing
+        try:
+            await db.execute("ALTER TABLE instances ADD COLUMN backend TEXT DEFAULT 'pipeline'")
+        except Exception:
+            pass  # Column already exists
+
         await db.commit()
 
 
@@ -88,6 +94,7 @@ async def load_instances() -> list[dict[str, Any]]:
                         "enabled": bool(row["enabled"]),
                         "total_tasks": row["total_tasks"],
                         "failed_tasks": row["failed_tasks"],
+                        "backend": row["backend"] if "backend" in row.keys() else "pipeline",
                     })
     except Exception:
         pass
@@ -96,17 +103,18 @@ async def load_instances() -> list[dict[str, Any]]:
 
 
 async def save_instance(instance_id: str, name: str, url: str, enabled: bool = True,
-                        total_tasks: int = 0, failed_tasks: int = 0) -> None:
+                        total_tasks: int = 0, failed_tasks: int = 0,
+                        backend: str = "pipeline") -> None:
     """Save or update an instance in database."""
     from datetime import datetime
 
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
             INSERT OR REPLACE INTO instances
-            (id, name, url, enabled, total_tasks, failed_tasks, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (id, name, url, enabled, total_tasks, failed_tasks, created_at, backend)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (instance_id, name, url, int(enabled), total_tasks, failed_tasks,
-              datetime.now().isoformat()))
+              datetime.now().isoformat(), backend))
         await db.commit()
 
 

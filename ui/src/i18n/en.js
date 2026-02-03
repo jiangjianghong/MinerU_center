@@ -63,7 +63,10 @@ export default {
     nodeName: 'NODE.NAME',
     nodeAddr: 'NODE.ADDRESS',
     connect: 'CONNECT',
-    initNode: 'INITIALIZE NODE'
+    initNode: 'INITIALIZE NODE',
+    backend: 'BACKEND.ENGINE',
+    backendPipeline: 'Pipeline (CPU)',
+    backendVllm: 'vLLM Async Engine (GPU)'
   },
   queue: {
     title: 'TASK.QUEUE',
@@ -105,5 +108,20 @@ export default {
     secondsAgo: '{n}s ago',
     minutesAgo: '{n}m ago',
     hoursAgo: '{n}h ago'
+  },
+  failedTasks: {
+    title: 'FAILED.TASKS',
+    empty: 'NO FAILED TASKS',
+    retryAll: 'RETRY ALL',
+    retry: 'RETRY',
+    error: 'ERROR',
+    retryCount: 'RETRIED',
+    times: 'times',
+    retrySuccess: 'Task requeued',
+    retryFailed: 'Retry failed',
+    retryAllSuccess: 'Requeued {n} tasks',
+    payload: 'PAYLOAD',
+    createdAt: 'CREATED',
+    failedAt: 'FAILED.AT'
   }
 }

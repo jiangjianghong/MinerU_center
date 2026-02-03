@@ -70,7 +70,12 @@
       </div>
 
       <!-- Failed -->
-      <div class="stat-card coral" :class="{ alert: animatedFailed > 0 }">
+      <div
+        class="stat-card coral clickable"
+        :class="{ alert: animatedFailed > 0 }"
+        @click="$emit('showFailed')"
+        :title="t('failedTasks.title')"
+      >
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -120,6 +125,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
 import { useI18n } from '../i18n'
+
+defineEmits(['showFailed'])
 
 const store = useMainStore()
 const { stats } = storeToRefs(store)
@@ -240,6 +247,14 @@ onMounted(() => {
 
 .stat-card.alert {
   animation: jelly 0.5s ease;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-5px) scale(1.02);
 }
 
 /* Stat Icon */

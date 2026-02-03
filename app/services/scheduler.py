@@ -30,8 +30,22 @@ class Scheduler:
         self._running = False
         self._task: asyncio.Task | None = None
         self._running_tasks: dict[str, Task] = {}
+        self._failed_tasks: dict[str, Task] = {}  # Store failed tasks for retry
         self._task_futures: dict[str, asyncio.Future] = {}
         self._lock = asyncio.Lock()
+        self._on_change_callbacks: list = []  # Change notification callbacks
+
+    def add_change_callback(self, callback) -> None:
+        """Register a callback for state changes."""
+        self._on_change_callbacks.append(callback)
+
+    def _notify_change(self) -> None:
+        """Notify all callbacks of state change."""
+        for callback in self._on_change_callbacks:
+            try:
+                callback()
+            except Exception:
+                pass
 
     async def start(self) -> None:
         """Start the scheduler loop."""
@@ -112,7 +126,7 @@ class Scheduler:
 
         try:
             result = await asyncio.wait_for(
-                client.submit_task(task.payload),
+                client.submit_task(task.payload, instance.backend),
                 timeout=self.config.task_timeout
             )
             await self._handle_task_success(task, result)
@@ -140,9 +154,6 @@ class Scheduler:
         """Handle task failure."""
         task.error = error
 
-        if task.instance_id:
-            self.pool.increment_failed_tasks(task.instance_id)
-
         if task.retry_count < self.config.max_retries:
             task.retry_count += 1
             task.status = TaskStatus.PENDING
@@ -152,20 +163,22 @@ class Scheduler:
             self.queue.enqueue(task)
             logger.info(f"Task {task.id} requeued (retry {task.retry_count})")
         else:
+            # Only count as failed when all retries exhausted
+            if task.instance_id:
+                self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.FAILED
             task.completed_at = datetime.now()
             async with self._lock:
                 self._running_tasks.pop(task.id, None)
+                self._failed_tasks[task.id] = task
                 if task.id in self._task_futures:
                     self._task_futures[task.id].set_result(task)
+            self._notify_change()
             logger.error(f"Task {task.id} failed: {error}")
 
     async def _handle_task_timeout(self, task: Task) -> None:
         """Handle task timeout."""
         task.error = "Task execution timeout"
-
-        if task.instance_id:
-            self.pool.increment_failed_tasks(task.instance_id)
 
         if task.retry_count < self.config.max_retries:
             task.retry_count += 1
@@ -176,12 +189,17 @@ class Scheduler:
             self.queue.enqueue(task)
             logger.info(f"Task {task.id} requeued after timeout (retry {task.retry_count})")
         else:
+            # Only count as failed when all retries exhausted
+            if task.instance_id:
+                self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.TIMEOUT
             task.completed_at = datetime.now()
             async with self._lock:
                 self._running_tasks.pop(task.id, None)
+                self._failed_tasks[task.id] = task
                 if task.id in self._task_futures:
                     self._task_futures[task.id].set_result(task)
+            self._notify_change()
             logger.error(f"Task {task.id} timed out")
 
     def _release_instance(self, instance_id: str) -> None:
@@ -258,3 +276,45 @@ class Scheduler:
                 return True
 
         return False
+
+    def get_all_failed_tasks(self) -> list[Task]:
+        """Get all failed tasks."""
+        return list(self._failed_tasks.values())
+
+    async def retry_failed_task(self, task_id: str) -> bool:
+        """Retry a single failed task."""
+        async with self._lock:
+            task = self._failed_tasks.pop(task_id, None)
+        if not task:
+            return False
+        # Reset task for retry
+        task.status = TaskStatus.PENDING
+        task.error = None
+        task.retry_count = 0
+        task.started_at = None
+        task.completed_at = None
+        task.instance_id = None
+        self.queue.enqueue(task)
+        self._notify_change()
+        logger.info(f"Task {task_id} manually retried")
+        return True
+
+    async def retry_all_failed_tasks(self) -> int:
+        """Retry all failed tasks. Returns count of retried tasks."""
+        async with self._lock:
+            tasks = list(self._failed_tasks.values())
+            self._failed_tasks.clear()
+        count = 0
+        for task in tasks:
+            task.status = TaskStatus.PENDING
+            task.error = None
+            task.retry_count = 0
+            task.started_at = None
+            task.completed_at = None
+            task.instance_id = None
+            self.queue.enqueue(task)
+            count += 1
+        if count > 0:
+            self._notify_change()
+        logger.info(f"Retried {count} failed tasks")
+        return count

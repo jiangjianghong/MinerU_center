@@ -3,7 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .models.config import CenterConfig
 from .models.instance import InstanceStatus
+from .models.task import Task, TaskStatus
 from .services.queue_manager import QueueManager
 from .services.instance_pool import InstancePool
 from .services.scheduler import Scheduler
@@ -74,7 +75,10 @@ async def load_persisted_data():
     # Load instances
     instances = await database.load_instances()
     for inst_data in instances:
-        instance = instance_pool.add_instance(inst_data["url"], inst_data["name"])
+        instance = instance_pool.add_instance(
+            inst_data["url"], inst_data["name"],
+            backend=inst_data.get("backend", "pipeline")
+        )
         # Override the auto-generated ID with the persisted one
         instance_pool._instances.pop(instance.id)
         instance.id = inst_data["id"]
@@ -138,6 +142,32 @@ app.include_router(tasks_router)
 app.include_router(instances_router)
 app.include_router(config_router)
 app.include_router(stats_router)
+
+
+@app.post("/file_parse")
+async def mineru_compatible_file_parse(request: Request):
+    """MinerU compatible file_parse endpoint.
+
+    Accepts the same payload as MinerU's /file_parse endpoint.
+    Supports both sync and async modes via the 'async' field in the body.
+    """
+    body = await request.json()
+    async_mode = body.pop("async", False)
+
+    # Create a task with the payload
+    task = Task(payload=body)
+    queue_manager.enqueue(task)
+
+    if async_mode:
+        return {"task_id": task.id}
+
+    # Sync mode: wait for result
+    result_task = await scheduler.wait_for_task(task.id)
+    if result_task is None:
+        return {"error": "Task not found"}
+    if result_task.status == TaskStatus.COMPLETED:
+        return result_task.result
+    return {"error": result_task.error or "Task failed", "status": result_task.status}
 
 
 # Health check endpoint

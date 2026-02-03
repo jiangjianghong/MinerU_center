@@ -47,6 +47,10 @@
                 <span class="detail-icon">🔗</span>
                 <span class="detail-value url">{{ instance.url }}</span>
               </div>
+              <div class="detail-row">
+                <span class="detail-icon">⚙️</span>
+                <span class="detail-value">{{ instance.backend || 'pipeline' }}</span>
+              </div>
               <div v-if="instance.current_task_id" class="detail-row active">
                 <span class="detail-icon">⚡</span>
                 <span class="detail-value">{{ instance.current_task_id.substring(0, 12) }}...</span>
@@ -120,6 +124,27 @@
                   placeholder="http://192.168.1.100:8080"
                 />
               </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('instances.backend') }}</label>
+                <div class="backend-selector">
+                  <button
+                    class="backend-option"
+                    :class="{ active: newInstance.backend === 'pipeline' }"
+                    @click="newInstance.backend = 'pipeline'"
+                  >
+                    <span class="backend-label">Pipeline</span>
+                    <span class="backend-desc">CPU</span>
+                  </button>
+                  <button
+                    class="backend-option"
+                    :class="{ active: newInstance.backend === 'vllm-async-engine' }"
+                    @click="newInstance.backend = 'vllm-async-engine'"
+                  >
+                    <span class="backend-label">vLLM</span>
+                    <span class="backend-desc">GPU</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Modal Footer -->
@@ -150,19 +175,20 @@ const { instances } = storeToRefs(store)
 const { t } = useI18n()
 
 const showAddDialog = ref(false)
-const newInstance = reactive({ name: '', url: '' })
+const newInstance = reactive({ name: '', url: '', backend: 'pipeline' })
 
 async function addInstance() {
   if (!newInstance.name || !newInstance.url) {
     ElMessage.warning(t('instances.fillAllFields'))
     return
   }
-  const success = await store.addInstance(newInstance.name, newInstance.url)
+  const success = await store.addInstance(newInstance.name, newInstance.url, newInstance.backend)
   if (success) {
     ElMessage.success(t('instances.addSuccess'))
     showAddDialog.value = false
     newInstance.name = ''
     newInstance.url = ''
+    newInstance.backend = 'pipeline'
   } else {
     ElMessage.error(t('instances.addFailed'))
   }
@@ -649,6 +675,59 @@ async function toggleInstance(id, enable) {
 .clay-btn:active {
   transform: translateY(0);
   box-shadow: var(--shadow-active);
+}
+
+/* Backend Selector */
+.backend-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.backend-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 12px;
+  background: var(--clay-surface);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: var(--shadow-concave);
+  cursor: pointer;
+  transition: all 0.2s var(--transition-smooth);
+  font-family: 'Nunito', sans-serif;
+}
+
+.backend-option.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border-color: transparent;
+  box-shadow: var(--shadow-convex-sm);
+}
+
+.backend-option:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-convex-sm);
+}
+
+.backend-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.backend-option.active .backend-label {
+  color: white;
+}
+
+.backend-desc {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.backend-option.active .backend-desc {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Transitions */

@@ -17,14 +17,20 @@ export const tasksApi = {
 
   list: (status = null) => api.get('/tasks', { params: { status } }),
 
-  cancel: (taskId) => api.delete(`/tasks/${taskId}`)
+  cancel: (taskId) => api.delete(`/tasks/${taskId}`),
+
+  listFailed: () => api.get('/tasks/failed/list'),
+
+  retry: (taskId) => api.post(`/tasks/${taskId}/retry`),
+
+  retryAll: () => api.post('/tasks/retry-all')
 }
 
 // Instances API
 export const instancesApi = {
   list: () => api.get('/instances'),
 
-  add: (name, url) => api.post('/instances', { name, url }),
+  add: (name, url, backend = 'pipeline') => api.post('/instances', { name, url, backend }),
 
   remove: (instanceId) => api.delete(`/instances/${instanceId}`),
 

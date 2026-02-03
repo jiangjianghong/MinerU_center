@@ -9,11 +9,24 @@ class MinerUClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-    async def submit_task(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Submit a task to MinerU instance."""
+    async def submit_task(self, payload: dict[str, Any], instance_backend: str | None = None) -> dict[str, Any]:
+        """Submit a task to MinerU instance.
+
+        Args:
+            payload: The task payload to send.
+            instance_backend: The backend configured on the target instance.
+                If payload backend is 'auto' or missing, it will be replaced
+                with the instance's backend value.
+        """
+        # Backend conversion logic
+        payload_backend = payload.get("backend")
+        if payload_backend == "auto" or not payload_backend:
+            if instance_backend:
+                payload["backend"] = instance_backend
+
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
-                f"{self.base_url}/pdf_parse",
+                f"{self.base_url}/file_parse",
                 json=payload
             )
             response.raise_for_status()

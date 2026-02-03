@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { statsApi, instancesApi, configApi, createWebSocket } from '../api'
+import { statsApi, instancesApi, configApi, tasksApi, createWebSocket } from '../api'
 
 export const useMainStore = defineStore('main', () => {
   // State
@@ -13,6 +13,7 @@ export const useMainStore = defineStore('main', () => {
   const instances = ref([])
   const queuedTasks = ref([])
   const runningTasks = ref([])
+  const failedTasks = ref([])
   const config = ref({
     task_timeout: 300,
     queue_timeout: 600,
@@ -72,9 +73,9 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
-  async function addInstance(name, url) {
+  async function addInstance(name, url, backend = 'pipeline') {
     try {
-      await instancesApi.add(name, url)
+      await instancesApi.add(name, url, backend)
       await fetchInstances()
       return true
     } catch (error) {
@@ -127,6 +128,7 @@ export const useMainStore = defineStore('main', () => {
           instances.value = data.data.instances
           queuedTasks.value = data.data.queued_tasks || []
           runningTasks.value = data.data.running_tasks || []
+          failedTasks.value = data.data.failed_tasks || []
         }
       },
       () => {
@@ -150,12 +152,33 @@ export const useMainStore = defineStore('main', () => {
     connectWebSocket()
   }
 
+  async function retryTask(taskId) {
+    try {
+      await tasksApi.retry(taskId)
+      return true
+    } catch (error) {
+      console.error('Failed to retry task:', error)
+      return false
+    }
+  }
+
+  async function retryAllTasks() {
+    try {
+      const response = await tasksApi.retryAll()
+      return response.data.count
+    } catch (error) {
+      console.error('Failed to retry all tasks:', error)
+      return 0
+    }
+  }
+
   return {
     // State
     stats,
     instances,
     queuedTasks,
     runningTasks,
+    failedTasks,
     config,
     wsConnected,
 
@@ -175,6 +198,8 @@ export const useMainStore = defineStore('main', () => {
     toggleInstance,
     connectWebSocket,
     disconnectWebSocket,
-    init
+    init,
+    retryTask,
+    retryAllTasks
   }
 })

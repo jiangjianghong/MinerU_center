@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mineru-center:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mineru-center
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # 持久化数据目录
+      - ./data:/app/data
+      # 持久化文件目录
+      - ./file:/app/file
+    environment:
+      - MINERU_CENTER_HOST=0.0.0.0
+      - MINERU_CENTER_PORT=8000
+      - MINERU_CENTER_DEBUG=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mineru-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  mineru-network:
+    driver: bridge

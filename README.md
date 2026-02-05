@@ -2,6 +2,8 @@
 
 MinerU Center 是一个统一管理多个 MinerU 实例的中心服务，提供请求队列管理、负载均衡、热配置等功能。
 
+**关键词**：MInerU 并行，MinerU 任务队列，MinerU 负载均衡，MinerU 热配置，MinerU 实时监控
+
 ![alt text](image.png)
 ## 功能特性
 

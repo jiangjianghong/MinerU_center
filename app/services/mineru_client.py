@@ -1,3 +1,4 @@
+import base64
 from typing import Any
 import httpx
 
@@ -11,10 +12,10 @@ class MinerUClient:
         self.timeout = timeout + 10
 
     async def submit_task(self, payload: dict[str, Any], instance_backend: str | None = None) -> dict[str, Any]:
-        """Submit a task to MinerU instance.
+        """Submit a task to MinerU instance via multipart/form-data.
 
         Args:
-            payload: The task payload to send.
+            payload: The task payload containing file_base64, file_name, and form fields.
             instance_backend: The backend configured on the target instance.
                 If payload backend is 'auto' or missing, it will be replaced
                 with the instance's backend value.
@@ -25,10 +26,20 @@ class MinerUClient:
             if instance_backend:
                 payload["backend"] = instance_backend
 
+        # Decode file from base64
+        file_base64 = payload.get("file_base64", "")
+        file_name = payload.get("file_name", "document.pdf")
+        file_content = base64.b64decode(file_base64)
+
+        # Build form data (exclude file-related keys)
+        exclude_keys = {"file_base64", "file_name"}
+        data = {k: v for k, v in payload.items() if k not in exclude_keys}
+
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/file_parse",
-                json=payload
+                files={"files": (file_name, file_content, "application/pdf")},
+                data=data,
             )
             response.raise_for_status()
             return response.json()
@@ -37,7 +48,7 @@ class MinerUClient:
         """Check if instance is healthy."""
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
-                response = await client.get(f"{self.base_url}/health")
+                response = await client.get(f"{self.base_url}/openapi.json")
                 return response.status_code == 200
         except Exception:
             return False

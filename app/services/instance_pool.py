@@ -132,7 +132,10 @@ class InstancePool:
             return list(self._instances.values())
 
     async def health_check(self, timeout: int | None = None) -> None:
-        """Check health of all instances."""
+        """Check health of all instances.
+
+        MinerU API doesn't have a /health endpoint, so we use /docs or /openapi.json instead.
+        """
         timeout = timeout or self._health_check_timeout
         instances = self.get_all()
 
@@ -142,7 +145,8 @@ class InstancePool:
 
             try:
                 async with httpx.AsyncClient(timeout=timeout) as client:
-                    response = await client.get(f"{instance.url}/health")
+                    # MinerU uses FastAPI, check /openapi.json for health
+                    response = await client.get(f"{instance.url}/openapi.json")
                     if response.status_code == 200:
                         self.update_heartbeat(instance.id)
                         if instance.status == InstanceStatus.OFFLINE:

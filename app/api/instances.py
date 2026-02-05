@@ -45,7 +45,7 @@ async def add_instance(
     instance = pool.add_instance(
         url=instance_create.url,
         name=instance_create.name,
-        backend=str(instance_create.backend)
+        backend=instance_create.backend.value
     )
 
     # Persist to SQLite
@@ -119,7 +119,7 @@ async def update_instance(
         instance_id,
         name=instance_update.name,
         url=instance_update.url,
-        backend=str(instance_update.backend) if instance_update.backend else None
+        backend=instance_update.backend.value if instance_update.backend else None
     )
 
     if not updated:
@@ -130,7 +130,7 @@ async def update_instance(
         instance_id,
         name=instance_update.name,
         url=instance_update.url,
-        backend=str(instance_update.backend) if instance_update.backend else None
+        backend=instance_update.backend.value if instance_update.backend else None
     )
 
     return InstanceResponse(

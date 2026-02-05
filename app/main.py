@@ -1,9 +1,10 @@
 import asyncio
+import base64
 import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -145,30 +146,62 @@ app.include_router(stats_router)
 
 
 @app.post("/file_parse")
-async def mineru_compatible_file_parse(request: Request):
+async def mineru_compatible_file_parse(
+    files: UploadFile = File(...),
+    return_middle_json: str = Form("false"),
+    return_model_output: str = Form("false"),
+    return_md: str = Form("true"),
+    return_images: str = Form("false"),
+    start_page_id: str = Form("0"),
+    end_page_id: str = Form("99999"),
+    parse_method: str = Form("auto"),
+    lang_list: str = Form("ch"),
+    output_dir: str = Form("."),
+    backend: str = Form("pipeline"),
+    async_mode: str = Form("false", alias="async"),
+):
     """MinerU compatible file_parse endpoint.
 
-    Accepts the same payload as MinerU's /file_parse endpoint.
-    Supports both sync and async modes via the 'async' field in the body.
+    Accepts the same multipart/form-data payload as MinerU's /file_parse endpoint.
+    Supports both sync and async modes via the 'async' form field.
     """
-    body = await request.json()
-    async_mode = body.pop("async", False)
+    # Read file content and encode to base64
+    file_content = await files.read()
+    file_base64 = base64.b64encode(file_content).decode("utf-8")
+
+    # Build payload with file data and form parameters
+    payload = {
+        "file_name": files.filename,
+        "file_base64": file_base64,
+        "return_middle_json": return_middle_json,
+        "return_model_output": return_model_output,
+        "return_md": return_md,
+        "return_images": return_images,
+        "start_page_id": start_page_id,
+        "end_page_id": end_page_id,
+        "parse_method": parse_method,
+        "lang_list": lang_list,
+        "output_dir": output_dir,
+        "backend": backend,
+    }
+
+    is_async = async_mode.lower() == "true"
 
     # Check queue size limit
     if queue_manager.size() >= config.max_queue_size:
         return {"error": "Queue is full", "status": "error"}
 
     # Create a task with the payload
-    task = Task(payload=body)
+    task = Task(payload=payload)
 
     # For sync mode, pre-register the future before enqueueing
     # to avoid race condition where task completes before wait_for_task
-    if not async_mode:
+    if not is_async:
         scheduler.pre_register_task_future(task.id)
 
     queue_manager.enqueue(task)
 
-    if async_mode:
+    if is_async:
         return {"task_id": task.id}
 
     # Sync mode: wait for result

@@ -94,10 +94,11 @@
     </div>
 
     <!-- Instance Status Bar -->
-    <div class="instance-bar">
+    <div class="instance-bar clickable" @click="$emit('showInstanceStatus')" title="点击查看实例详情">
       <div class="bar-title">
         <span class="title-icon">📊</span>
         {{ t('stats.instanceStatus') }}
+        <span class="click-hint">👆</span>
       </div>
       <div class="instance-stats">
         <div class="instance-stat">
@@ -126,7 +127,7 @@ import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
 import { useI18n } from '../i18n'
 
-defineEmits(['showFailed'])
+defineEmits(['showFailed', 'showInstanceStatus'])
 
 const store = useMainStore()
 const { stats } = storeToRefs(store)
@@ -353,6 +354,33 @@ onMounted(() => {
   border-radius: 25px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-convex);
+  transition: all 0.3s var(--transition-bounce);
+}
+
+.instance-bar.clickable {
+  cursor: pointer;
+}
+
+.instance-bar.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.instance-bar.clickable:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-active);
+}
+
+.click-hint {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  margin-left: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.instance-bar.clickable:hover .click-hint {
+  opacity: 1;
 }
 
 .bar-title {

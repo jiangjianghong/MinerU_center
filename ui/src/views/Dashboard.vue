@@ -57,7 +57,7 @@
     <main class="main-content">
       <!-- Stats Overview -->
       <section class="stats-section">
-        <StatsCard @showFailed="showFailedTasks = true" />
+        <StatsCard @showFailed="showFailedTasks = true" @showInstanceStatus="showInstanceStatus = true" />
       </section>
 
       <!-- Two Column Layout -->
@@ -92,6 +92,9 @@
 
     <!-- Failed Tasks Dialog -->
     <FailedTasksDialog v-model:visible="showFailedTasks" />
+
+    <!-- Instance Status Dialog -->
+    <InstanceStatusDialog v-model:visible="showInstanceStatus" />
   </div>
 </template>
 
@@ -105,6 +108,7 @@ import InstancePanel from '../components/InstancePanel.vue'
 import QueuePanel from '../components/QueuePanel.vue'
 import ConfigPanel from '../components/ConfigPanel.vue'
 import FailedTasksDialog from '../components/FailedTasksDialog.vue'
+import InstanceStatusDialog from '../components/InstanceStatusDialog.vue'
 
 const store = useMainStore()
 const { wsConnected } = storeToRefs(store)
@@ -112,6 +116,7 @@ const { t, locale, toggleLocale } = useI18n()
 
 const showConfig = ref(false)
 const showFailedTasks = ref(false)
+const showInstanceStatus = ref(false)
 const isRefreshing = ref(false)
 const currentTime = ref('')
 

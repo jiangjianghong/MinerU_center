@@ -127,5 +127,26 @@ export default {
     payload: '任务参数',
     createdAt: '创建时间',
     failedAt: '失败时间'
+  },
+  taskList: {
+    titleAll: '全部任务',
+    titlePending: '排队中任务',
+    titleRunning: '处理中任务',
+    titleCompleted: '已完成任务',
+    loading: '加载中...',
+    empty: '暂无任务',
+    fileName: '文件名',
+    priority: '优先级',
+    createdAt: '创建时间',
+    startedAt: '开始时间',
+    completedAt: '完成时间',
+    duration: '处理耗时',
+    instance: '处理实例',
+    position: '队列位置',
+    positionAhead: '前方 {n} 位',
+    requestedAt: '请求时间',
+    waitTime: '等待时长',
+    processingTime: '已处理时长',
+    retryCount: '重试次数'
   }
 }

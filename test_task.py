@@ -74,7 +74,7 @@ def submit_task(file_path):
 
     except httpx.ConnectError:
         print(f"\nError: Cannot connect to {API_URL}")
-        print("Make sure MinerU Center is running (uv run python run.py)")
+        print("Make sure MinerU Center is running (uv run python app.py)")
     except httpx.HTTPStatusError as e:
         print(f"\nHTTP Error: {e.response.status_code}")
         print(f"  Detail: {e.response.text}")

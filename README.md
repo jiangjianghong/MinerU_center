@@ -38,7 +38,7 @@ MinerU_center/
 │   ├── package.json
 │   └── vite.config.js
 ├── pyproject.toml
-├── run.py
+├── app.py
 └── README.md
 ```
 
@@ -65,7 +65,7 @@ npm run build
 cd ..
 
 # 启动服务
-uv run python run.py
+uv run python app.py
 ```
 
 服务启动后访问 http://localhost:8000/ui
@@ -74,7 +74,7 @@ uv run python run.py
 
 ```bash
 # 终端 1：启动后端
-uv run python run.py
+uv run python app.py
 
 # 终端 2：启动前端开发服务器
 cd ui

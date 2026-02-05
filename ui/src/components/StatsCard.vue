@@ -3,7 +3,7 @@
     <!-- Stats Grid -->
     <div class="stats-grid">
       <!-- Total Tasks -->
-      <div class="stat-card blue">
+      <div class="stat-card blue clickable" @click="$emit('showAllTasks')" :title="t('taskList.titleAll')">
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -20,7 +20,7 @@
       </div>
 
       <!-- Pending -->
-      <div class="stat-card yellow">
+      <div class="stat-card yellow clickable" @click="$emit('showPending')" :title="t('taskList.titlePending')">
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -37,7 +37,7 @@
       </div>
 
       <!-- Running -->
-      <div class="stat-card purple active">
+      <div class="stat-card purple active clickable" @click="$emit('showRunning')" :title="t('taskList.titleRunning')">
         <div class="stat-icon pulse">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Completed -->
-      <div class="stat-card green">
+      <div class="stat-card green clickable" @click="$emit('showCompleted')" :title="t('taskList.titleCompleted')">
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -127,7 +127,7 @@ import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
 import { useI18n } from '../i18n'
 
-defineEmits(['showFailed', 'showInstanceStatus'])
+defineEmits(['showFailed', 'showInstanceStatus', 'showAllTasks', 'showPending', 'showRunning', 'showCompleted'])
 
 const store = useMainStore()
 const { stats } = storeToRefs(store)

@@ -28,6 +28,17 @@ export const useMainStore = defineStore('main', () => {
   const wsConnected = ref(false)
   let ws = null
 
+  // Task list dialog state
+  const taskListDialog = ref({
+    visible: false,
+    status: null,  // null | 'pending' | 'running' | 'completed'
+    tasks: [],
+    total: 0,
+    page: 1,
+    pageSize: 50,
+    loading: false
+  })
+
   // Getters
   const totalPending = computed(() => stats.value.queue.pending)
   const totalRunning = computed(() => stats.value.queue.running)
@@ -183,6 +194,38 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
+  // Task list dialog methods
+  async function fetchTasksByStatus(status = null, page = 1, pageSize = 50) {
+    taskListDialog.value.loading = true
+    try {
+      const response = await tasksApi.listByStatus(status, page, pageSize)
+      taskListDialog.value.tasks = response.data.tasks || []
+      taskListDialog.value.total = response.data.total || 0
+      taskListDialog.value.page = page
+      taskListDialog.value.pageSize = pageSize
+    } catch (error) {
+      console.error('Failed to fetch tasks:', error)
+      taskListDialog.value.tasks = []
+      taskListDialog.value.total = 0
+    } finally {
+      taskListDialog.value.loading = false
+    }
+  }
+
+  function openTaskListDialog(status = null) {
+    taskListDialog.value.status = status
+    taskListDialog.value.visible = true
+    taskListDialog.value.page = 1
+    fetchTasksByStatus(status, 1, taskListDialog.value.pageSize)
+  }
+
+  function closeTaskListDialog() {
+    taskListDialog.value.visible = false
+    taskListDialog.value.tasks = []
+    taskListDialog.value.total = 0
+    taskListDialog.value.page = 1
+  }
+
   return {
     // State
     stats,
@@ -192,6 +235,7 @@ export const useMainStore = defineStore('main', () => {
     failedTasks,
     config,
     wsConnected,
+    taskListDialog,
 
     // Getters
     totalPending,
@@ -212,6 +256,9 @@ export const useMainStore = defineStore('main', () => {
     disconnectWebSocket,
     init,
     retryTask,
-    retryAllTasks
+    retryAllTasks,
+    fetchTasksByStatus,
+    openTaskListDialog,
+    closeTaskListDialog
   }
 })

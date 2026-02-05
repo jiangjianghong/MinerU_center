@@ -194,6 +194,19 @@ async def mineru_compatible_file_parse(
     # Create a task with the payload
     task = Task(payload=payload)
 
+    # Save task to database
+    try:
+        await database.save_task(
+            task_id=task.id,
+            status=task.status.value,
+            priority=task.priority,
+            payload=payload,
+            file_name=files.filename,
+            created_at=task.created_at.isoformat()
+        )
+    except Exception as e:
+        logger.error(f"Failed to save task to database: {e}")
+
     # For sync mode, pre-register the future before enqueueing
     # to avoid race condition where task completes before wait_for_task
     if not is_async:

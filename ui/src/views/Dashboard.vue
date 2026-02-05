@@ -57,7 +57,14 @@
     <main class="main-content">
       <!-- Stats Overview -->
       <section class="stats-section">
-        <StatsCard @showFailed="showFailedTasks = true" @showInstanceStatus="showInstanceStatus = true" />
+        <StatsCard
+          @showFailed="showFailedTasks = true"
+          @showInstanceStatus="showInstanceStatus = true"
+          @showAllTasks="store.openTaskListDialog(null)"
+          @showPending="store.openTaskListDialog('pending')"
+          @showRunning="store.openTaskListDialog('running')"
+          @showCompleted="store.openTaskListDialog('completed')"
+        />
       </section>
 
       <!-- Two Column Layout -->
@@ -95,6 +102,9 @@
 
     <!-- Instance Status Dialog -->
     <InstanceStatusDialog v-model:visible="showInstanceStatus" />
+
+    <!-- Task List Dialog -->
+    <TaskListDialog />
   </div>
 </template>
 
@@ -109,6 +119,7 @@ import QueuePanel from '../components/QueuePanel.vue'
 import ConfigPanel from '../components/ConfigPanel.vue'
 import FailedTasksDialog from '../components/FailedTasksDialog.vue'
 import InstanceStatusDialog from '../components/InstanceStatusDialog.vue'
+import TaskListDialog from '../components/TaskListDialog.vue'
 
 const store = useMainStore()
 const { wsConnected } = storeToRefs(store)

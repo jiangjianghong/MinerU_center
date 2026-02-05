@@ -127,5 +127,26 @@ export default {
     payload: 'PAYLOAD',
     createdAt: 'CREATED',
     failedAt: 'FAILED.AT'
+  },
+  taskList: {
+    titleAll: 'ALL.TASKS',
+    titlePending: 'PENDING.TASKS',
+    titleRunning: 'RUNNING.TASKS',
+    titleCompleted: 'COMPLETED.TASKS',
+    loading: 'Loading...',
+    empty: 'NO TASKS',
+    fileName: 'FILE',
+    priority: 'PRIORITY',
+    createdAt: 'CREATED',
+    startedAt: 'STARTED',
+    completedAt: 'COMPLETED',
+    duration: 'DURATION',
+    instance: 'INSTANCE',
+    position: 'POSITION',
+    positionAhead: '{n} ahead',
+    requestedAt: 'REQUESTED',
+    waitTime: 'WAIT TIME',
+    processingTime: 'PROC TIME',
+    retryCount: 'RETRIES'
   }
 }

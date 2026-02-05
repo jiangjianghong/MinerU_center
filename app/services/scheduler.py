@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from ..models.task import Task, TaskStatus
 from ..models.instance import InstanceStatus
 from .mineru_client import MinerUClient
+from . import database
 
 if TYPE_CHECKING:
     from .queue_manager import QueueManager
@@ -112,6 +113,18 @@ class Scheduler:
         async with self._lock:
             self._running_tasks[task.id] = task
 
+        # Update database: PENDING → RUNNING
+        try:
+            await database.update_task_status(
+                task.id,
+                TaskStatus.RUNNING.value,
+                started_at=task.started_at.isoformat(),
+                instance_id=instance_id,
+                instance_name=instance.name
+            )
+        except Exception as e:
+            logger.error(f"Failed to update task status in database: {e}")
+
         # Create async task for execution
         asyncio.create_task(self._execute_task(task, instance_id))
 
@@ -143,10 +156,26 @@ class Scheduler:
         task.completed_at = datetime.now()
         task.result = result
 
+        # Calculate duration
+        duration = None
+        if task.started_at:
+            duration = (task.completed_at - task.started_at).total_seconds()
+
         async with self._lock:
             self._running_tasks.pop(task.id, None)
             if task.id in self._task_futures:
                 self._task_futures[task.id].set_result(task)
+
+        # Update database: RUNNING → COMPLETED
+        try:
+            await database.update_task_status(
+                task.id,
+                TaskStatus.COMPLETED.value,
+                completed_at=task.completed_at.isoformat(),
+                duration=duration
+            )
+        except Exception as e:
+            logger.error(f"Failed to update task status in database: {e}")
 
         logger.info(f"Task {task.id} completed successfully")
 
@@ -161,6 +190,21 @@ class Scheduler:
             task.instance_id = None
             await asyncio.sleep(self.config.retry_delay)
             self.queue.enqueue(task)
+
+            # Update database: retry - reset to PENDING
+            try:
+                await database.update_task_status(
+                    task.id,
+                    TaskStatus.PENDING.value,
+                    started_at=None,
+                    instance_id=None,
+                    instance_name=None,
+                    error=error,
+                    retry_count=task.retry_count
+                )
+            except Exception as e:
+                logger.error(f"Failed to update task status in database: {e}")
+
             logger.info(f"Task {task.id} requeued (retry {task.retry_count})")
         else:
             # Only count as failed when all retries exhausted
@@ -168,11 +212,31 @@ class Scheduler:
                 self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.FAILED
             task.completed_at = datetime.now()
+
+            # Calculate duration if started_at exists
+            duration = None
+            if task.started_at:
+                duration = (task.completed_at - task.started_at).total_seconds()
+
             async with self._lock:
                 self._running_tasks.pop(task.id, None)
                 self._failed_tasks[task.id] = task
                 if task.id in self._task_futures:
                     self._task_futures[task.id].set_result(task)
+
+            # Update database: → FAILED
+            try:
+                await database.update_task_status(
+                    task.id,
+                    TaskStatus.FAILED.value,
+                    completed_at=task.completed_at.isoformat(),
+                    error=error,
+                    retry_count=task.retry_count,
+                    duration=duration
+                )
+            except Exception as e:
+                logger.error(f"Failed to update task status in database: {e}")
+
             self._notify_change()
             logger.error(f"Task {task.id} failed: {error}")
 
@@ -187,6 +251,21 @@ class Scheduler:
             task.instance_id = None
             await asyncio.sleep(self.config.retry_delay)
             self.queue.enqueue(task)
+
+            # Update database: retry - reset to PENDING
+            try:
+                await database.update_task_status(
+                    task.id,
+                    TaskStatus.PENDING.value,
+                    started_at=None,
+                    instance_id=None,
+                    instance_name=None,
+                    error=task.error,
+                    retry_count=task.retry_count
+                )
+            except Exception as e:
+                logger.error(f"Failed to update task status in database: {e}")
+
             logger.info(f"Task {task.id} requeued after timeout (retry {task.retry_count})")
         else:
             # Only count as failed when all retries exhausted
@@ -194,11 +273,31 @@ class Scheduler:
                 self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.TIMEOUT
             task.completed_at = datetime.now()
+
+            # Calculate duration if started_at exists
+            duration = None
+            if task.started_at:
+                duration = (task.completed_at - task.started_at).total_seconds()
+
             async with self._lock:
                 self._running_tasks.pop(task.id, None)
                 self._failed_tasks[task.id] = task
                 if task.id in self._task_futures:
                     self._task_futures[task.id].set_result(task)
+
+            # Update database: → TIMEOUT
+            try:
+                await database.update_task_status(
+                    task.id,
+                    TaskStatus.TIMEOUT.value,
+                    completed_at=task.completed_at.isoformat(),
+                    error=task.error,
+                    retry_count=task.retry_count,
+                    duration=duration
+                )
+            except Exception as e:
+                logger.error(f"Failed to update task status in database: {e}")
+
             self._notify_change()
             logger.error(f"Task {task.id} timed out")
 
@@ -310,6 +409,22 @@ class Scheduler:
         task.completed_at = None
         task.instance_id = None
         self.queue.enqueue(task)
+
+        # Update database: FAILED → PENDING
+        try:
+            await database.update_task_status(
+                task.id,
+                TaskStatus.PENDING.value,
+                started_at=None,
+                completed_at=None,
+                instance_id=None,
+                instance_name=None,
+                error=None,
+                retry_count=0
+            )
+        except Exception as e:
+            logger.error(f"Failed to update task status in database: {e}")
+
         self._notify_change()
         logger.info(f"Task {task_id} manually retried")
         return True
@@ -328,6 +443,22 @@ class Scheduler:
             task.completed_at = None
             task.instance_id = None
             self.queue.enqueue(task)
+
+            # Update database: FAILED → PENDING
+            try:
+                await database.update_task_status(
+                    task.id,
+                    TaskStatus.PENDING.value,
+                    started_at=None,
+                    completed_at=None,
+                    instance_id=None,
+                    instance_name=None,
+                    error=None,
+                    retry_count=0
+                )
+            except Exception as e:
+                logger.error(f"Failed to update task status in database: {e}")
+
             count += 1
         if count > 0:
             self._notify_change()

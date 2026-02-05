@@ -17,6 +17,9 @@ export const tasksApi = {
 
   list: (status = null) => api.get('/tasks', { params: { status } }),
 
+  listByStatus: (status = null, page = 1, pageSize = 50) =>
+    api.get('/tasks', { params: { status, page, page_size: pageSize } }),
+
   cancel: (taskId) => api.delete(`/tasks/${taskId}`),
 
   listFailed: () => api.get('/tasks/failed/list'),

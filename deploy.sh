@@ -98,10 +98,10 @@ cleanup_container() {
     fi
 }
 
-# 构建镜像
+# 构建镜像（利用缓存，仅变更层重建）
 build_image() {
     print_info "开始构建 Docker 镜像..."
-    $COMPOSE_CMD -f ${COMPOSE_FILE} build --no-cache
+    $COMPOSE_CMD -f ${COMPOSE_FILE} build
     print_success "镜像构建完成"
 }
 
@@ -121,7 +121,7 @@ check_service() {
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
-        if curl -s -f http://localhost:8000/api/stats > /dev/null 2>&1; then
+        if curl -s -f http://localhost:5020/api/stats > /dev/null 2>&1; then
             print_success "服务已就绪"
             return 0
         fi
@@ -145,8 +145,8 @@ show_status() {
     docker ps --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
     echo ""
     echo "访问地址:"
-    echo -e "  - Web UI: ${BLUE}http://localhost:8000/ui${NC}"
-    echo -e "  - API:    ${BLUE}http://localhost:8000/api${NC}"
+    echo -e "  - Web UI: ${BLUE}http://localhost:5020/ui${NC}"
+    echo -e "  - API:    ${BLUE}http://localhost:5020/api${NC}"
     echo ""
     echo "常用命令:"
     echo "  - 查看日志: docker logs -f ${CONTAINER_NAME}"
@@ -195,7 +195,7 @@ show_help() {
     echo ""
 }
 
-# 完整部署流程
+# 完整部署流程（增量更新，不删除容器）
 deploy() {
     echo ""
     echo "=========================================="
@@ -209,9 +209,11 @@ deploy() {
     # 确保数据目录存在
     mkdir -p data file
 
-    cleanup_container
-    build_image
-    start_container
+    # 使用 up --build 增量构建并重启，利用 Docker 缓存，只更新变化的层
+    print_info "构建并启动服务（增量更新）..."
+    $COMPOSE_CMD -f ${COMPOSE_FILE} up -d --build
+    print_success "服务已更新并启动"
+
     check_service
     show_status
 }
@@ -280,8 +282,8 @@ status() {
             print_success "服务正在运行"
             echo ""
             echo "访问地址:"
-            echo -e "  - Web UI: ${BLUE}http://localhost:8000/ui${NC}"
-            echo -e "  - API:    ${BLUE}http://localhost:8000/api${NC}"
+            echo -e "  - Web UI: ${BLUE}http://localhost:5020/ui${NC}"
+            echo -e "  - API:    ${BLUE}http://localhost:5020/api${NC}"
         else
             print_warning "服务已停止"
         fi

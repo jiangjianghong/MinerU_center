@@ -50,15 +50,16 @@ RUN mkdir -p /app/data /app/file
 
 # 设置环境变量
 ENV MINERU_CENTER_HOST=0.0.0.0
-ENV MINERU_CENTER_PORT=8000
+ENV MINERU_CENTER_PORT=5020
 ENV MINERU_CENTER_DEBUG=false
 
 # 暴露端口
-EXPOSE 8000
+EXPOSE 5020
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/stats || exit 1
+    CMD curl -f http://localhost:5020/api/stats || exit 1
 
 # 启动命令
 CMD ["uv", "run", "python", "app.py"]
+

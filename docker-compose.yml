@@ -7,8 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: mineru-center
     restart: unless-stopped
-    ports:
-      - "5020:5020"
+    network_mode: host
     volumes:
       # 持久化数据目录
       - ./data:/app/data
@@ -27,14 +26,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    networks:
-      - mineru-network
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
-networks:
-  mineru-network:
-    driver: bridge

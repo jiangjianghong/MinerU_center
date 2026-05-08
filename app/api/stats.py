@@ -66,22 +66,29 @@ async def get_stats(
 # WebSocket connections manager
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: set[WebSocket] = set()
+        self._lock = asyncio.Lock()
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections.add(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+    async def disconnect(self, websocket: WebSocket):
+        self.active_connections.discard(websocket)
+        try:
+            await websocket.close()
+        except Exception:
+            pass
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
+        disconnected = set()
+        for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
             except Exception:
-                pass
+                disconnected.add(connection)
+        for conn in disconnected:
+            self.active_connections.discard(conn)
 
 
 manager = ConnectionManager()
@@ -169,7 +176,9 @@ async def websocket_endpoint(
             await websocket.send_json(stats)
             await asyncio.sleep(1)
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+    except (WebSocketDisconnect, RuntimeError):
+        pass
     except Exception:
-        manager.disconnect(websocket)
+        pass
+    finally:
+        await manager.disconnect(websocket)

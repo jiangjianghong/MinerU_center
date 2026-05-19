@@ -32,6 +32,7 @@ class MinerUInstance(BaseModel):
 
     class Config:
         use_enum_values = True
+        validate_assignment = True
 
 
 class InstanceCreate(BaseModel):

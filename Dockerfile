@@ -27,7 +27,12 @@ WORKDIR /app
 # 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    tzdata \
+    && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Shanghai
 
 # 安装 uv 包管理器
 RUN pip install uv

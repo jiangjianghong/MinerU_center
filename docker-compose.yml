@@ -20,6 +20,7 @@ services:
       - MINERU_CENTER_HOST=0.0.0.0
       - MINERU_CENTER_PORT=5020
       - MINERU_CENTER_DEBUG=false
+      - TZ=Asia/Shanghai
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5020/api/stats"]
       interval: 30s

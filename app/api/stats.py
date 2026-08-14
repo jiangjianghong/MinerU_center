@@ -1,11 +1,11 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, Depends
 from typing import Annotated
-import asyncio
-import json
 
+from ..services import database
 from ..services.queue_manager import QueueManager
 from ..services.instance_pool import InstancePool
 from ..services.scheduler import Scheduler
+from ..utils.time import to_utc_iso
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -29,156 +29,58 @@ def get_scheduler() -> Scheduler:
 async def get_stats(
     queue: Annotated[QueueManager, Depends(get_queue_manager)],
     pool: Annotated[InstancePool, Depends(get_instance_pool)],
-    sched: Annotated[Scheduler, Depends(get_scheduler)]
+    sched: Annotated[Scheduler, Depends(get_scheduler)],
 ):
-    """Get current statistics."""
+    """Return one consistent, lightweight dashboard snapshot."""
     instances = pool.get_all()
-    running_tasks = sched.get_all_running_tasks()
     queued_tasks = queue.get_all()
-    failed_tasks_list = sched.get_all_failed_tasks()
-
-    total_tasks = sum(inst.total_tasks for inst in instances)
-    historical_failed = sum(inst.failed_tasks for inst in instances)
-
-    idle_instances = sum(1 for inst in instances if inst.status == "idle" and inst.enabled)
-    busy_instances = sum(1 for inst in instances if inst.status == "busy")
-    offline_instances = sum(1 for inst in instances if inst.status in ["offline", "error"])
+    running_tasks = sched.get_all_running_tasks()
+    task_stats = await database.get_task_stats()
 
     return {
         "queue": {
             "pending": len(queued_tasks),
-            "running": len(running_tasks)
+            "running": len(running_tasks),
         },
-        "tasks": {
-            "total": total_tasks,
-            "completed": total_tasks - historical_failed,
-            "failed": len(failed_tasks_list)  # Current pending failed tasks
-        },
-        "instances": {
-            "total": len(instances),
-            "idle": idle_instances,
-            "busy": busy_instances,
-            "offline": offline_instances
-        }
-    }
-
-
-# WebSocket connections manager
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: set[WebSocket] = set()
-        self._lock = asyncio.Lock()
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.add(websocket)
-
-    async def disconnect(self, websocket: WebSocket):
-        self.active_connections.discard(websocket)
-        try:
-            await websocket.close()
-        except Exception:
-            pass
-
-    async def broadcast(self, message: dict):
-        disconnected = set()
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_json(message)
-            except Exception:
-                disconnected.add(connection)
-        for conn in disconnected:
-            self.active_connections.discard(conn)
-
-
-manager = ConnectionManager()
-
-
-@router.websocket("/ws")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    queue: Annotated[QueueManager, Depends(get_queue_manager)],
-    pool: Annotated[InstancePool, Depends(get_instance_pool)],
-    sched: Annotated[Scheduler, Depends(get_scheduler)]
-):
-    """WebSocket endpoint for real-time stats updates."""
-    await manager.connect(websocket)
-
-    try:
-        while True:
-            # Send stats update every second
-            instances = pool.get_all()
-            running_tasks = sched.get_all_running_tasks()
-            queued_tasks = queue.get_all()
-            failed_tasks_list = sched.get_all_failed_tasks()
-
-            total_tasks = sum(inst.total_tasks for inst in instances)
-            historical_failed = sum(inst.failed_tasks for inst in instances)
-
-            stats = {
-                "type": "stats",
-                "data": {
-                    "queue": {
-                        "pending": len(queued_tasks),
-                        "running": len(running_tasks)
-                    },
-                    "tasks": {
-                        "total": total_tasks,
-                        "completed": total_tasks - historical_failed,
-                        "failed": len(failed_tasks_list)  # Current pending failed tasks
-                    },
-                    "instances": [
-                        {
-                            "id": inst.id,
-                            "name": inst.name,
-                            "url": inst.url,
-                            "status": inst.status,
-                            "current_task_id": inst.current_task_id,
-                            "enabled": inst.enabled,
-                            "backend": str(inst.backend)
-                        }
-                        for inst in instances
-                    ],
-                    "queued_tasks": [
-                        {
-                            "id": task.id,
-                            "priority": task.priority,
-                            "created_at": task.created_at.isoformat(),
-                            "status": task.status
-                        }
-                        for task in queued_tasks[:20]  # Limit to 20
-                    ],
-                    "running_tasks": [
-                        {
-                            "id": task.id,
-                            "priority": task.priority,
-                            "started_at": task.started_at.isoformat() if task.started_at else None,
-                            "instance_id": task.instance_id,
-                            "status": task.status
-                        }
-                        for task in running_tasks
-                    ],
-                    "failed_tasks": [
-                        {
-                            "id": task.id,
-                            "priority": task.priority,
-                            "payload": task.payload,
-                            "error": task.error,
-                            "retry_count": task.retry_count,
-                            "created_at": task.created_at.isoformat(),
-                            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
-                        }
-                        for task in failed_tasks_list
-                    ]
-                }
+        "tasks": task_stats,
+        "instances": [
+            {
+                "id": inst.id,
+                "name": inst.name,
+                "url": inst.url,
+                "status": inst.status,
+                "current_task_id": inst.current_task_id,
+                "enabled": inst.enabled,
+                "backend": str(inst.backend),
             }
-
-            await websocket.send_json(stats)
-            await asyncio.sleep(1)
-
-    except (WebSocketDisconnect, RuntimeError):
-        pass
-    except Exception:
-        pass
-    finally:
-        await manager.disconnect(websocket)
+            for inst in instances
+        ],
+        "queued_tasks": [
+            {
+                "id": task.id,
+                "priority": task.priority,
+                "file_name": task.payload.get("file_name") if task.payload else None,
+                "created_at": to_utc_iso(task.created_at),
+                "status": task.status,
+                "position": position,
+                "request_url": None,
+            }
+            for position, task in enumerate(queued_tasks, start=1)
+        ],
+        "running_tasks": [
+            {
+                "id": task.id,
+                "priority": task.priority,
+                "file_name": task.payload.get("file_name") if task.payload else None,
+                "created_at": to_utc_iso(task.created_at),
+                "started_at": to_utc_iso(task.started_at),
+                "instance_id": task.instance_id,
+                "status": task.status,
+                "request_url": (
+                    f"{instance.url.rstrip('/')}/file_parse" if instance else None
+                ),
+            }
+            for task in running_tasks
+            for instance in [pool.get_instance(task.instance_id) if task.instance_id else None]
+        ],
+    }

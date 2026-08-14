@@ -4,6 +4,8 @@ from typing import Any
 from pydantic import BaseModel, Field
 import uuid
 
+from ..utils.time import utc_now
+
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -19,7 +21,7 @@ class Task(BaseModel):
     payload: dict[str, Any] = Field(default_factory=dict)
     status: TaskStatus = TaskStatus.PENDING
     priority: int = Field(default=5, ge=1, le=10)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utc_now)
     started_at: datetime | None = None
     completed_at: datetime | None = None
     result: dict[str, Any] | None = None

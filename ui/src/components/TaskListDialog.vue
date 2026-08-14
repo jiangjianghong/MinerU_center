@@ -79,6 +79,11 @@
                   <span class="value">{{ task.file_name }}</span>
                 </div>
 
+                <div class="task-file request-url">
+                  <span class="label">{{ t('taskList.requestUrl') }}:</span>
+                  <span class="value">{{ task.request_url || '-' }}</span>
+                </div>
+
                 <!-- Row 3: Meta Info based on status -->
                 <div class="task-meta">
                   <!-- All/Completed: show priority, created_at, duration -->
@@ -229,8 +234,12 @@ const totalPages = computed(() => {
 
 function formatTime(isoString) {
   if (!isoString) return '-'
-  const date = new Date(isoString)
+  const date = new Date(normalizeUtc(isoString))
   return date.toLocaleString()
+}
+
+function normalizeUtc(isoString) {
+  return /(?:Z|[+-]\d{2}:\d{2})$/.test(isoString) ? isoString : `${isoString}Z`
 }
 
 function formatDuration(seconds) {
@@ -243,7 +252,7 @@ function formatDuration(seconds) {
 
 function getWaitTime(isoString) {
   if (!isoString) return '-'
-  const created = new Date(isoString)
+  const created = new Date(normalizeUtc(isoString))
   const now = new Date()
   const seconds = Math.floor((now - created) / 1000)
   if (seconds < 60) return `${seconds}s`

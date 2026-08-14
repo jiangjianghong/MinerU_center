@@ -74,10 +74,6 @@
                     <span class="meta-value">{{ formatTime(task.completed_at) }}</span>
                   </span>
                 </div>
-                <div v-if="task.payload" class="task-payload">
-                  <span class="payload-label">{{ t('failedTasks.payload') }}:</span>
-                  <code class="payload-value">{{ formatPayload(task.payload) }}</code>
-                </div>
               </div>
               <div class="task-actions">
                 <button
@@ -101,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMainStore } from '../stores'
 import { useI18n } from '../i18n'
@@ -118,19 +114,15 @@ const { t } = useI18n()
 
 const retrying = ref(false)
 
+watch(() => props.visible, (visible) => {
+  if (visible) store.fetchFailedTasks()
+})
+
 function formatTime(isoString) {
   if (!isoString) return '-'
-  const date = new Date(isoString)
+  const normalized = /(?:Z|[+-]\d{2}:\d{2})$/.test(isoString) ? isoString : `${isoString}Z`
+  const date = new Date(normalized)
   return date.toLocaleString()
-}
-
-function formatPayload(payload) {
-  if (!payload) return '{}'
-  try {
-    return JSON.stringify(payload, null, 2).slice(0, 200)
-  } catch {
-    return String(payload).slice(0, 200)
-  }
 }
 
 async function handleRetry(taskId) {
@@ -138,7 +130,7 @@ async function handleRetry(taskId) {
   const success = await store.retryTask(taskId)
   retrying.value = false
   if (success) {
-    // Task will be removed from failed list via WebSocket update
+    await store.fetchFailedTasks()
   }
 }
 
@@ -147,7 +139,7 @@ async function handleRetryAll() {
   const count = await store.retryAllTasks()
   retrying.value = false
   if (count > 0) {
-    // Tasks will be removed from failed list via WebSocket update
+    await store.fetchFailedTasks()
   }
 }
 </script>

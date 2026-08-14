@@ -6,6 +6,7 @@ from ..services.queue_manager import QueueManager
 from ..services.scheduler import Scheduler
 from ..services import database
 from ..models.config import CenterConfig
+from ..utils.time import to_utc_iso
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -52,7 +53,7 @@ async def create_task(
             priority=task.priority,
             payload=task_create.payload,
             file_name=file_name,
-            created_at=task.created_at.isoformat()
+            created_at=to_utc_iso(task.created_at)
         )
     except Exception as e:
         import logging
@@ -80,6 +81,29 @@ async def create_task(
             )
         else:
             raise HTTPException(status_code=500, detail="Task execution failed")
+
+
+@router.get("/failed/list")
+async def list_failed_tasks():
+    """Get list of all failed tasks."""
+    tasks, total = await database.get_tasks_by_status("failed", 1, 1000)
+    return {
+        "tasks": [
+            {
+                "id": task["id"],
+                "task_id": task["id"],
+                "status": task["status"],
+                "priority": task["priority"],
+                "error": task["error"],
+                "retry_count": task["retry_count"],
+                "created_at": to_utc_iso(task["created_at"]),
+                "completed_at": to_utc_iso(task["completed_at"]),
+                "request_url": task["request_url"],
+            }
+            for task in tasks
+        ],
+        "total": total,
+    }
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
@@ -131,14 +155,15 @@ async def list_tasks(
     if status == "pending":
         # Get pending tasks from queue (in-memory) for accurate queue position
         tasks = []
-        for task in queue.get_all():
+        for position, task in enumerate(queue.get_all(), start=1):
             tasks.append({
                 "task_id": task.id,
                 "status": task.status,
                 "priority": task.priority,
                 "file_name": task.payload.get("file_name") if task.payload else None,
-                "created_at": task.created_at.isoformat(),
-                "position": queue.get_position(task.id)
+                "created_at": to_utc_iso(task.created_at),
+                "position": position,
+                "request_url": None,
             })
 
         total = len(tasks)
@@ -163,11 +188,12 @@ async def list_tasks(
                 "status": task.status,
                 "priority": task.priority,
                 "file_name": task.payload.get("file_name") if task.payload else None,
-                "created_at": task.created_at.isoformat(),
-                "started_at": task.started_at.isoformat() if task.started_at else None,
+                "created_at": to_utc_iso(task.created_at),
+                "started_at": to_utc_iso(task.started_at),
                 "instance_id": task.instance_id,
                 "instance_name": instance.name if instance else None,
-                "retry_count": task.retry_count
+                "retry_count": task.retry_count,
+                "request_url": f"{instance.url.rstrip('/')}/file_parse" if instance else None,
             })
 
         total = len(tasks)
@@ -185,18 +211,20 @@ async def list_tasks(
         tasks = []
         for task in db_tasks:
             tasks.append({
+                "id": task["id"],
                 "task_id": task["id"],
                 "status": task["status"],
                 "priority": task["priority"],
                 "file_name": task["file_name"],
-                "created_at": task["created_at"],
-                "started_at": task["started_at"],
-                "completed_at": task["completed_at"],
+                "created_at": to_utc_iso(task["created_at"]),
+                "started_at": to_utc_iso(task["started_at"]),
+                "completed_at": to_utc_iso(task["completed_at"]),
                 "instance_id": task["instance_id"],
                 "instance_name": task["instance_name"],
                 "error": task["error"],
                 "retry_count": task["retry_count"],
-                "duration": task["duration"]
+                "duration": task["duration"],
+                "request_url": task["request_url"],
             })
 
         return {"tasks": tasks, "total": total, "page": page, "page_size": page_size}
@@ -211,26 +239,6 @@ async def cancel_task(
     if await sched.cancel_task(task_id):
         return {"message": "Task cancelled", "task_id": task_id}
     raise HTTPException(status_code=404, detail="Task not found or already completed")
-
-
-@router.get("/failed/list")
-async def list_failed_tasks(
-    sched: Annotated[Scheduler, Depends(get_scheduler)]
-):
-    """Get list of all failed tasks."""
-    tasks = []
-    for task in sched.get_all_failed_tasks():
-        tasks.append({
-            "task_id": task.id,
-            "status": task.status,
-            "priority": task.priority,
-            "payload": task.payload,
-            "error": task.error,
-            "retry_count": task.retry_count,
-            "created_at": task.created_at.isoformat(),
-            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
-        })
-    return {"tasks": tasks, "total": len(tasks)}
 
 
 @router.post("/{task_id}/retry")

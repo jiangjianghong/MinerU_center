@@ -1,12 +1,12 @@
 import asyncio
 import logging
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from ..models.task import Task, TaskStatus
 from ..models.instance import InstanceStatus
 from .mineru_client import MinerUClient
 from . import database
+from ..utils.time import to_utc_iso, utc_now
 
 if TYPE_CHECKING:
     from .queue_manager import QueueManager
@@ -103,7 +103,7 @@ class Scheduler:
 
         # Update states
         task.status = TaskStatus.RUNNING
-        task.started_at = datetime.now()
+        task.started_at = utc_now()
         task.instance_id = instance_id
 
         self.pool.set_status(instance_id, InstanceStatus.BUSY)
@@ -118,9 +118,10 @@ class Scheduler:
             await database.update_task_status(
                 task.id,
                 TaskStatus.RUNNING.value,
-                started_at=task.started_at.isoformat(),
+                started_at=to_utc_iso(task.started_at),
                 instance_id=instance_id,
-                instance_name=instance.name
+                instance_name=instance.name,
+                request_url=f"{instance.url.rstrip('/')}/file_parse",
             )
         except Exception as e:
             logger.error(f"Failed to update task status in database: {e}")
@@ -153,7 +154,7 @@ class Scheduler:
     async def _handle_task_success(self, task: Task, result: dict) -> None:
         """Handle successful task completion."""
         task.status = TaskStatus.COMPLETED
-        task.completed_at = datetime.now()
+        task.completed_at = utc_now()
         task.result = result
 
         # Calculate duration
@@ -171,7 +172,7 @@ class Scheduler:
             await database.update_task_status(
                 task.id,
                 TaskStatus.COMPLETED.value,
-                completed_at=task.completed_at.isoformat(),
+                completed_at=to_utc_iso(task.completed_at),
                 duration=duration
             )
         except Exception as e:
@@ -211,7 +212,7 @@ class Scheduler:
             if task.instance_id:
                 self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.FAILED
-            task.completed_at = datetime.now()
+            task.completed_at = utc_now()
 
             # Calculate duration if started_at exists
             duration = None
@@ -229,7 +230,7 @@ class Scheduler:
                 await database.update_task_status(
                     task.id,
                     TaskStatus.FAILED.value,
-                    completed_at=task.completed_at.isoformat(),
+                    completed_at=to_utc_iso(task.completed_at),
                     error=error,
                     retry_count=task.retry_count,
                     duration=duration
@@ -272,7 +273,7 @@ class Scheduler:
             if task.instance_id:
                 self.pool.increment_failed_tasks(task.instance_id)
             task.status = TaskStatus.TIMEOUT
-            task.completed_at = datetime.now()
+            task.completed_at = utc_now()
 
             # Calculate duration if started_at exists
             duration = None
@@ -290,7 +291,7 @@ class Scheduler:
                 await database.update_task_status(
                     task.id,
                     TaskStatus.TIMEOUT.value,
-                    completed_at=task.completed_at.isoformat(),
+                    completed_at=to_utc_iso(task.completed_at),
                     error=task.error,
                     retry_count=task.retry_count,
                     duration=duration
@@ -310,7 +311,7 @@ class Scheduler:
 
     async def _check_timeouts(self) -> None:
         """Check for queue timeouts."""
-        now = datetime.now()
+        now = utc_now()
         queue_tasks = self.queue.get_all()
 
         for task in queue_tasks:
@@ -323,6 +324,15 @@ class Scheduler:
                 async with self._lock:
                     if task.id in self._task_futures:
                         self._task_futures[task.id].set_result(task)
+                try:
+                    await database.update_task_status(
+                        task.id,
+                        TaskStatus.TIMEOUT.value,
+                        completed_at=to_utc_iso(task.completed_at),
+                        error=task.error,
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to persist queue timeout: {e}")
                 logger.warning(f"Task {task.id} timed out in queue")
 
     def pre_register_task_future(self, task_id: str) -> None:
@@ -375,7 +385,17 @@ class Scheduler:
     async def cancel_task(self, task_id: str) -> bool:
         """Cancel a task."""
         # Try to remove from queue
-        if self.queue.remove(task_id):
+        queued_task = self.queue.get(task_id)
+        if queued_task and self.queue.remove(task_id):
+            queued_task.status = TaskStatus.CANCELLED
+            queued_task.completed_at = utc_now()
+            queued_task.error = "Task cancelled"
+            await database.update_task_status(
+                task_id,
+                TaskStatus.CANCELLED.value,
+                completed_at=to_utc_iso(queued_task.completed_at),
+                error=queued_task.error,
+            )
             return True
 
         # Check if running
@@ -383,10 +403,17 @@ class Scheduler:
             if task_id in self._running_tasks:
                 task = self._running_tasks[task_id]
                 task.status = TaskStatus.CANCELLED
-                task.completed_at = datetime.now()
+                task.completed_at = utc_now()
+                task.error = "Task cancelled"
                 self._running_tasks.pop(task_id, None)
                 if task_id in self._task_futures:
                     self._task_futures[task_id].set_result(task)
+                await database.update_task_status(
+                    task_id,
+                    TaskStatus.CANCELLED.value,
+                    completed_at=to_utc_iso(task.completed_at),
+                    error=task.error,
+                )
                 return True
 
         return False
@@ -420,7 +447,8 @@ class Scheduler:
                 instance_id=None,
                 instance_name=None,
                 error=None,
-                retry_count=0
+                retry_count=0,
+                request_url=None,
             )
         except Exception as e:
             logger.error(f"Failed to update task status in database: {e}")
@@ -451,10 +479,11 @@ class Scheduler:
                     TaskStatus.PENDING.value,
                     started_at=None,
                     completed_at=None,
-                    instance_id=None,
-                    instance_name=None,
-                    error=None,
-                    retry_count=0
+                instance_id=None,
+                instance_name=None,
+                error=None,
+                retry_count=0,
+                request_url=None,
                 )
             except Exception as e:
                 logger.error(f"Failed to update task status in database: {e}")

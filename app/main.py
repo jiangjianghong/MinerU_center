@@ -18,6 +18,7 @@ from .services.instance_pool import InstancePool
 from .services.scheduler import Scheduler
 from .services import database
 from .api import tasks_router, instances_router, config_router, stats_router
+from .utils.time import to_utc_iso
 
 # Setup logging
 logging.basicConfig(
@@ -67,6 +68,11 @@ async def load_persisted_data():
 
     # Initialize database
     await database.init_database()
+    interrupted = await database.fail_interrupted_tasks(
+        "Service restarted before task completion"
+    )
+    if interrupted:
+        logger.warning("Marked %s interrupted tasks as failed", interrupted)
 
     # Load config
     config = await database.load_config()
@@ -167,7 +173,8 @@ async def mineru_compatible_file_parse(
     """
     # Read file content and encode to base64
     file_content = await files.read()
-    file_base64 = base64.b64encode(file_content).decode("utf-8")
+    encoded_file = await asyncio.to_thread(base64.b64encode, file_content)
+    file_base64 = encoded_file.decode("utf-8")
 
     # Build payload with file data and form parameters
     payload = {
@@ -202,7 +209,7 @@ async def mineru_compatible_file_parse(
             priority=task.priority,
             payload=payload,
             file_name=files.filename,
-            created_at=task.created_at.isoformat()
+            created_at=to_utc_iso(task.created_at)
         )
     except Exception as e:
         logger.error(f"Failed to save task to database: {e}")

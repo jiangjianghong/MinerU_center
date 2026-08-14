@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { statsApi, instancesApi, configApi, tasksApi, createWebSocket } from '../api'
+import { statsApi, instancesApi, configApi, tasksApi } from '../api'
 
 export const useMainStore = defineStore('main', () => {
   // State
@@ -25,8 +25,12 @@ export const useMainStore = defineStore('main', () => {
     instance_timeout: 10
   })
 
-  const wsConnected = ref(false)
-  let ws = null
+  const dataFresh = ref(false)
+  let pollTimer = null
+  let pollInFlight = false
+  let polling = false
+  let failureCount = 0
+  const failureDelays = [2000, 5000, 10000, 30000]
 
   // Task list dialog state
   const taskListDialog = ref({
@@ -47,11 +51,34 @@ export const useMainStore = defineStore('main', () => {
 
   // Actions
   async function fetchStats() {
+    if (pollInFlight) return false
+    pollInFlight = true
     try {
       const response = await statsApi.get()
-      stats.value = response.data
+      const data = response.data
+      stats.value = {
+        queue: data.queue,
+        tasks: data.tasks,
+        instances: {
+          total: data.instances.length,
+          idle: data.instances.filter(i => i.status === 'idle' && i.enabled).length,
+          busy: data.instances.filter(i => i.status === 'busy').length,
+          offline: data.instances.filter(i => i.status === 'offline' || i.status === 'error').length
+        }
+      }
+      instances.value = data.instances
+      queuedTasks.value = data.queued_tasks || []
+      runningTasks.value = data.running_tasks || []
+      dataFresh.value = true
+      failureCount = 0
+      return true
     } catch (error) {
+      dataFresh.value = false
+      failureCount += 1
       console.error('Failed to fetch stats:', error)
+      return false
+    } finally {
+      pollInFlight = false
     }
   }
 
@@ -132,46 +159,53 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
-  function connectWebSocket() {
-    ws = createWebSocket(
-      (data) => {
-        wsConnected.value = true
-        if (data.type === 'stats' && data.data) {
-          stats.value = {
-            queue: data.data.queue,
-            tasks: data.data.tasks,
-            instances: {
-              total: data.data.instances.length,
-              idle: data.data.instances.filter(i => i.status === 'idle' && i.enabled).length,
-              busy: data.data.instances.filter(i => i.status === 'busy').length,
-              offline: data.data.instances.filter(i => i.status === 'offline' || i.status === 'error').length
-            }
-          }
-          instances.value = data.data.instances
-          queuedTasks.value = data.data.queued_tasks || []
-          runningTasks.value = data.data.running_tasks || []
-          failedTasks.value = data.data.failed_tasks || []
-        }
-      },
-      () => {
-        wsConnected.value = false
-      }
-    )
+  function nextPollDelay() {
+    if (failureCount > 0) {
+      return failureDelays[Math.min(failureCount - 1, failureDelays.length - 1)]
+    }
+    if (document.hidden) return 15000
+    return stats.value.queue.pending + stats.value.queue.running > 0 ? 2000 : 5000
   }
 
-  function disconnectWebSocket() {
-    if (ws) {
-      ws.close()
-      ws = null
+  function schedulePoll() {
+    if (!polling) return
+    clearTimeout(pollTimer)
+    pollTimer = setTimeout(pollDashboard, nextPollDelay())
+  }
+
+  async function pollDashboard() {
+    await fetchStats()
+    schedulePoll()
+  }
+
+  async function refreshDashboard() {
+    return fetchStats()
+  }
+
+  function handleVisibilityChange() {
+    if (!document.hidden && polling) {
+      clearTimeout(pollTimer)
+      pollDashboard()
     }
-    wsConnected.value = false
+  }
+
+  function startPolling() {
+    if (polling) return
+    polling = true
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    pollDashboard()
+  }
+
+  function stopPolling() {
+    polling = false
+    clearTimeout(pollTimer)
+    pollTimer = null
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
   }
 
   function init() {
-    fetchStats()
-    fetchInstances()
     fetchConfig()
-    connectWebSocket()
+    startPolling()
   }
 
   async function retryTask(taskId) {
@@ -180,6 +214,18 @@ export const useMainStore = defineStore('main', () => {
       return true
     } catch (error) {
       console.error('Failed to retry task:', error)
+      return false
+    }
+  }
+
+  async function fetchFailedTasks() {
+    try {
+      const response = await tasksApi.listFailed()
+      failedTasks.value = response.data.tasks || []
+      return true
+    } catch (error) {
+      console.error('Failed to fetch failed tasks:', error)
+      failedTasks.value = []
       return false
     }
   }
@@ -234,7 +280,7 @@ export const useMainStore = defineStore('main', () => {
     runningTasks,
     failedTasks,
     config,
-    wsConnected,
+    dataFresh,
     taskListDialog,
 
     // Getters
@@ -252,9 +298,11 @@ export const useMainStore = defineStore('main', () => {
     updateInstance,
     removeInstance,
     toggleInstance,
-    connectWebSocket,
-    disconnectWebSocket,
+    refreshDashboard,
+    startPolling,
+    stopPolling,
     init,
+    fetchFailedTasks,
     retryTask,
     retryAllTasks,
     fetchTasksByStatus,

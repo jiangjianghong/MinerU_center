@@ -16,8 +16,8 @@ export default {
     title: 'MINERU',
     subtitle: '控制中心 v1.0',
     sysTime: '系统时间',
-    linkOk: '连接正常',
-    offline: '离线',
+    linkOk: '数据已更新',
+    offline: '刷新失败',
     sysReady: '系统就绪',
     mem: '内存',
     cpu: '处理器',
@@ -147,6 +147,7 @@ export default {
     requestedAt: '请求时间',
     waitTime: '等待时长',
     processingTime: '已处理时长',
-    retryCount: '重试次数'
+    retryCount: '重试次数',
+    requestUrl: '请求地址'
   }
 }

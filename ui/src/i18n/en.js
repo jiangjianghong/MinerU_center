@@ -16,8 +16,8 @@ export default {
     title: 'MINERU',
     subtitle: 'CONTROL CENTER v1.0',
     sysTime: 'SYS.TIME',
-    linkOk: 'LINK.OK',
-    offline: 'OFFLINE',
+    linkOk: 'DATA UPDATED',
+    offline: 'REFRESH FAILED',
     sysReady: 'SYS.READY',
     mem: 'MEM',
     cpu: 'CPU',
@@ -147,6 +147,7 @@ export default {
     requestedAt: 'REQUESTED',
     waitTime: 'WAIT TIME',
     processingTime: 'PROC TIME',
-    retryCount: 'RETRIES'
+    retryCount: 'RETRIES',
+    requestUrl: 'REQUEST URL'
   }
 }

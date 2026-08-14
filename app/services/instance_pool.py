@@ -1,9 +1,9 @@
 import threading
-from datetime import datetime
 from typing import Callable
 import httpx
 
 from ..models.instance import MinerUInstance, InstanceStatus, BackendType
+from ..utils.time import utc_now
 
 
 class InstancePool:
@@ -104,7 +104,7 @@ class InstancePool:
         """Update last heartbeat time."""
         with self._lock:
             if instance_id in self._instances:
-                self._instances[instance_id].last_heartbeat = datetime.now()
+                self._instances[instance_id].last_heartbeat = utc_now()
 
     def enable_instance(self, instance_id: str) -> bool:
         """Enable instance."""

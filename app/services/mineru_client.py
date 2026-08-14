@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from typing import Any
 import httpx
@@ -29,7 +30,7 @@ class MinerUClient:
         # Decode file from base64
         file_base64 = payload.get("file_base64", "")
         file_name = payload.get("file_name", "document.pdf")
-        file_content = base64.b64decode(file_base64)
+        file_content = await asyncio.to_thread(base64.b64decode, file_base64)
 
         # Build form data (exclude file-related keys)
         exclude_keys = {"file_base64", "file_name"}

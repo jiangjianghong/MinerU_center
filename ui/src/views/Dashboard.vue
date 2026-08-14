@@ -26,10 +26,10 @@
       </div>
 
       <div class="header-right">
-        <!-- Connection Status -->
-        <div class="status-pill" :class="{ connected: wsConnected }">
+        <!-- Data Status -->
+        <div class="status-pill" :class="{ connected: dataFresh }">
           <span class="status-dot"></span>
-          <span class="status-text">{{ wsConnected ? t('dashboard.linkOk') : t('dashboard.offline') }}</span>
+          <span class="status-text">{{ dataFresh ? t('dashboard.linkOk') : t('dashboard.offline') }}</span>
         </div>
 
         <!-- Action Buttons -->
@@ -122,7 +122,7 @@ import InstanceStatusDialog from '../components/InstanceStatusDialog.vue'
 import TaskListDialog from '../components/TaskListDialog.vue'
 
 const store = useMainStore()
-const { wsConnected } = storeToRefs(store)
+const { dataFresh } = storeToRefs(store)
 const { t, locale, toggleLocale } = useI18n()
 
 const showConfig = ref(false)
@@ -136,13 +136,10 @@ function updateTime() {
   currentTime.value = now.toLocaleTimeString('en-US', { hour12: false })
 }
 
-function refresh() {
+async function refresh() {
   isRefreshing.value = true
-  store.fetchStats()
-  store.fetchInstances()
-  setTimeout(() => {
-    isRefreshing.value = false
-  }, 1000)
+  await store.refreshDashboard()
+  isRefreshing.value = false
 }
 
 let timeInterval
@@ -154,7 +151,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  store.disconnectWebSocket()
+  store.stopPolling()
   clearInterval(timeInterval)
 })
 </script>

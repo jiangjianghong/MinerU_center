@@ -7,6 +7,7 @@ from typing import Any
 from datetime import datetime
 
 from ..models.config import CenterConfig
+from ..utils.time import to_utc_iso, utc_now
 
 # Database file path
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "mineru_center.db")
@@ -60,9 +61,15 @@ async def init_database() -> None:
                 instance_name TEXT,
                 error TEXT,
                 retry_count INTEGER DEFAULT 0,
-                duration REAL
+                duration REAL,
+                request_url TEXT
             )
         """)
+
+        try:
+            await db.execute("ALTER TABLE tasks ADD COLUMN request_url TEXT")
+        except Exception:
+            pass
 
         # Create indexes for tasks table
         await db.execute("""
@@ -70,6 +77,10 @@ async def init_database() -> None:
         """)
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at)
+        """)
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_tasks_status_created_at
+            ON tasks(status, created_at DESC)
         """)
 
         await db.commit()
@@ -142,7 +153,7 @@ async def save_instance(instance_id: str, name: str, url: str, enabled: bool = T
             (id, name, url, enabled, total_tasks, failed_tasks, created_at, backend)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (instance_id, name, url, int(enabled), total_tasks, failed_tasks,
-              datetime.now().isoformat(), backend))
+                        to_utc_iso(utc_now()), backend))
         await db.commit()
 
 
@@ -208,7 +219,8 @@ async def save_task(task_id: str, status: str, priority: int, payload: dict | No
                     file_name: str | None, created_at: str, started_at: str | None = None,
                     completed_at: str | None = None, instance_id: str | None = None,
                     instance_name: str | None = None, error: str | None = None,
-                    retry_count: int = 0, duration: float | None = None) -> None:
+                    retry_count: int = 0, duration: float | None = None,
+                    request_url: str | None = None) -> None:
     """Save or update a task record in the database.
 
     Note: payload should NOT include file_base64 to avoid large data storage.
@@ -223,11 +235,11 @@ async def save_task(task_id: str, status: str, priority: int, payload: dict | No
         await db.execute("""
             INSERT OR REPLACE INTO tasks
             (id, status, priority, payload, file_name, created_at, started_at,
-             completed_at, instance_id, instance_name, error, retry_count, duration)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             completed_at, instance_id, instance_name, error, retry_count, duration, request_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (task_id, status, priority, payload_json, file_name, created_at,
               started_at, completed_at, instance_id, instance_name, error,
-              retry_count, duration))
+              retry_count, duration, request_url))
         await db.commit()
 
 
@@ -241,7 +253,7 @@ async def update_task_status(task_id: str, status: str, **kwargs) -> None:
     params = [status]
 
     allowed_fields = ['started_at', 'completed_at', 'instance_id', 'instance_name',
-                      'error', 'retry_count', 'duration']
+                      'error', 'retry_count', 'duration', 'request_url']
 
     for field in allowed_fields:
         if field in kwargs:
@@ -277,12 +289,13 @@ async def get_tasks_by_status(status: str | None = None, page: int = 1,
         db.row_factory = aiosqlite.Row
 
         # Build query based on status filter
+        fields = "id, status, priority, file_name, created_at, started_at, completed_at, instance_id, instance_name, error, retry_count, duration, request_url"
         if status:
             # For "failed" status, also include "timeout" status
             if status == 'failed':
                 count_query = "SELECT COUNT(*) FROM tasks WHERE status IN ('failed', 'timeout')"
-                data_query = """
-                    SELECT * FROM tasks
+                data_query = f"""
+                    SELECT {fields} FROM tasks
                     WHERE status IN ('failed', 'timeout')
                     ORDER BY created_at DESC
                     LIMIT ? OFFSET ?
@@ -291,8 +304,8 @@ async def get_tasks_by_status(status: str | None = None, page: int = 1,
                 data_params = (page_size, offset)
             else:
                 count_query = "SELECT COUNT(*) FROM tasks WHERE status = ?"
-                data_query = """
-                    SELECT * FROM tasks
+                data_query = f"""
+                    SELECT {fields} FROM tasks
                     WHERE status = ?
                     ORDER BY created_at DESC
                     LIMIT ? OFFSET ?
@@ -301,8 +314,8 @@ async def get_tasks_by_status(status: str | None = None, page: int = 1,
                 data_params = (status, page_size, offset)
         else:
             count_query = "SELECT COUNT(*) FROM tasks"
-            data_query = """
-                SELECT * FROM tasks
+            data_query = f"""
+                SELECT {fields} FROM tasks
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
             """
@@ -330,18 +343,24 @@ async def get_tasks_by_status(status: str | None = None, page: int = 1,
                     "error": row["error"],
                     "retry_count": row["retry_count"],
                     "duration": row["duration"],
+                    "request_url": row["request_url"],
                 }
-                # Parse payload JSON
-                if row["payload"]:
-                    try:
-                        task_data["payload"] = json.loads(row["payload"])
-                    except json.JSONDecodeError:
-                        task_data["payload"] = None
-                else:
-                    task_data["payload"] = None
                 tasks.append(task_data)
 
     return tasks, total
+
+
+async def fail_interrupted_tasks(error: str) -> int:
+    """Mark tasks that cannot be resumed after a process restart as failed."""
+    completed_at = to_utc_iso(utc_now())
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """UPDATE tasks SET status = 'failed', completed_at = ?, error = ?
+               WHERE status IN ('pending', 'running')""",
+            (completed_at, error),
+        )
+        await db.commit()
+        return cursor.rowcount
 
 
 async def get_task_stats() -> dict[str, int]:

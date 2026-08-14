@@ -56,32 +56,4 @@ export const statsApi = {
   get: () => api.get('/stats')
 }
 
-// WebSocket connection
-export function createWebSocket(onMessage, onError = null) {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const host = window.location.host
-  const ws = new WebSocket(`${protocol}//${host}/api/stats/ws`)
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data)
-      onMessage(data)
-    } catch (e) {
-      console.error('WebSocket parse error:', e)
-    }
-  }
-
-  ws.onerror = (error) => {
-    console.error('WebSocket error:', error)
-    if (onError) onError(error)
-  }
-
-  ws.onclose = () => {
-    console.log('WebSocket closed, reconnecting...')
-    setTimeout(() => createWebSocket(onMessage, onError), 3000)
-  }
-
-  return ws
-}
-
 export default api

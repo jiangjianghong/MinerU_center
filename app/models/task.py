@@ -28,6 +28,7 @@ class Task(BaseModel):
     error: str | None = None
     retry_count: int = 0
     instance_id: str | None = None
+    request_url: str | None = None
 
     def __lt__(self, other: "Task") -> bool:
         # Higher priority comes first (max heap behavior)

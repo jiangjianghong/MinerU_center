@@ -148,6 +148,6 @@ export default {
     waitTime: '等待时长',
     processingTime: '已处理时长',
     retryCount: '重试次数',
-    requestUrl: '请求地址'
+    requestUrl: '请求端 IP'
   }
 }

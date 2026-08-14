@@ -363,6 +363,17 @@ async def fail_interrupted_tasks(error: str) -> int:
         return cursor.rowcount
 
 
+async def clear_legacy_request_urls() -> int:
+    """Remove old backend URLs that were stored before request_url meant client IP."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            """UPDATE tasks SET request_url = NULL
+               WHERE request_url IS NOT NULL AND request_url LIKE '%/file_parse'"""
+        )
+        await db.commit()
+        return cursor.rowcount
+
+
 async def get_task_stats() -> dict[str, int]:
     """Get task statistics by status.
 

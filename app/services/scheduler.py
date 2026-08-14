@@ -121,7 +121,7 @@ class Scheduler:
                 started_at=to_utc_iso(task.started_at),
                 instance_id=instance_id,
                 instance_name=instance.name,
-                request_url=f"{instance.url.rstrip('/')}/file_parse",
+                request_url=task.request_url,
             )
         except Exception as e:
             logger.error(f"Failed to update task status in database: {e}")
@@ -448,7 +448,6 @@ class Scheduler:
                 instance_name=None,
                 error=None,
                 retry_count=0,
-                request_url=None,
             )
         except Exception as e:
             logger.error(f"Failed to update task status in database: {e}")
@@ -483,7 +482,6 @@ class Scheduler:
                 instance_name=None,
                 error=None,
                 retry_count=0,
-                request_url=None,
                 )
             except Exception as e:
                 logger.error(f"Failed to update task status in database: {e}")

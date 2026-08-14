@@ -19,6 +19,7 @@ from .services.scheduler import Scheduler
 from .services import database
 from .api import tasks_router, instances_router, config_router, stats_router
 from .utils.time import to_utc_iso
+from .utils.request_source import get_client_ip
 
 # Setup logging
 logging.basicConfig(
@@ -68,6 +69,9 @@ async def load_persisted_data():
 
     # Initialize database
     await database.init_database()
+    legacy_urls = await database.clear_legacy_request_urls()
+    if legacy_urls:
+        logger.warning("Cleared %s legacy backend request URLs", legacy_urls)
     interrupted = await database.fail_interrupted_tasks(
         "Service restarted before task completion"
     )
@@ -153,6 +157,7 @@ app.include_router(stats_router)
 
 @app.post("/file_parse")
 async def mineru_compatible_file_parse(
+    request: Request,
     files: UploadFile = File(...),
     return_middle_json: str = Form("false"),
     return_model_output: str = Form("false"),
@@ -198,8 +203,9 @@ async def mineru_compatible_file_parse(
     if queue_manager.size() >= config.max_queue_size:
         return {"error": "Queue is full", "status": "error"}
 
-    # Create a task with the payload
-    task = Task(payload=payload)
+    # Capture the caller before the task is dispatched to a MinerU instance.
+    client_ip = get_client_ip(request)
+    task = Task(payload=payload, request_url=client_ip)
 
     # Save task to database
     try:
@@ -209,7 +215,8 @@ async def mineru_compatible_file_parse(
             priority=task.priority,
             payload=payload,
             file_name=files.filename,
-            created_at=to_utc_iso(task.created_at)
+            created_at=to_utc_iso(task.created_at),
+            request_url=client_ip,
         )
     except Exception as e:
         logger.error(f"Failed to save task to database: {e}")

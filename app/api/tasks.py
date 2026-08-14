@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Annotated
 
 from ..models.task import Task, TaskCreate, TaskResponse, TaskStatus
@@ -7,6 +7,7 @@ from ..services.scheduler import Scheduler
 from ..services import database
 from ..models.config import CenterConfig
 from ..utils.time import to_utc_iso
+from ..utils.request_source import get_client_ip
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -28,6 +29,7 @@ def get_config() -> CenterConfig:
 
 @router.post("", response_model=TaskResponse)
 async def create_task(
+    request: Request,
     task_create: TaskCreate,
     queue: Annotated[QueueManager, Depends(get_queue_manager)],
     sched: Annotated[Scheduler, Depends(get_scheduler)],
@@ -41,7 +43,8 @@ async def create_task(
     # Create task
     task = Task(
         payload=task_create.payload,
-        priority=task_create.priority if cfg.enable_priority else 5
+        priority=task_create.priority if cfg.enable_priority else 5,
+        request_url=get_client_ip(request),
     )
 
     # Save task to database
@@ -53,7 +56,8 @@ async def create_task(
             priority=task.priority,
             payload=task_create.payload,
             file_name=file_name,
-            created_at=to_utc_iso(task.created_at)
+            created_at=to_utc_iso(task.created_at),
+            request_url=task.request_url,
         )
     except Exception as e:
         import logging
@@ -163,7 +167,7 @@ async def list_tasks(
                 "file_name": task.payload.get("file_name") if task.payload else None,
                 "created_at": to_utc_iso(task.created_at),
                 "position": position,
-                "request_url": None,
+                "request_url": task.request_url,
             })
 
         total = len(tasks)
@@ -193,7 +197,7 @@ async def list_tasks(
                 "instance_id": task.instance_id,
                 "instance_name": instance.name if instance else None,
                 "retry_count": task.retry_count,
-                "request_url": f"{instance.url.rstrip('/')}/file_parse" if instance else None,
+                "request_url": task.request_url,
             })
 
         total = len(tasks)

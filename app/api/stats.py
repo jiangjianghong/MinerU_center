@@ -63,7 +63,7 @@ async def get_stats(
                 "created_at": to_utc_iso(task.created_at),
                 "status": task.status,
                 "position": position,
-                "request_url": None,
+                "request_url": task.request_url,
             }
             for position, task in enumerate(queued_tasks, start=1)
         ],
@@ -76,11 +76,8 @@ async def get_stats(
                 "started_at": to_utc_iso(task.started_at),
                 "instance_id": task.instance_id,
                 "status": task.status,
-                "request_url": (
-                    f"{instance.url.rstrip('/')}/file_parse" if instance else None
-                ),
+                "request_url": task.request_url,
             }
             for task in running_tasks
-            for instance in [pool.get_instance(task.instance_id) if task.instance_id else None]
         ],
     }

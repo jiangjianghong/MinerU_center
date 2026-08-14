@@ -148,6 +148,6 @@ export default {
     waitTime: 'WAIT TIME',
     processingTime: 'PROC TIME',
     retryCount: 'RETRIES',
-    requestUrl: 'REQUEST URL'
+    requestUrl: 'CLIENT IP'
   }
 }

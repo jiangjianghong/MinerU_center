@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from app.models.config import CenterConfig
 from app.models.task import Task, TaskStatus
@@ -23,3 +24,8 @@ async def test_cancel_pending_task_persists_cancelled(monkeypatch):
     assert updates[0][1] == TaskStatus.CANCELLED.value
     assert updates[0][2]["completed_at"].endswith("Z")
 
+
+def test_scheduler_does_not_replace_request_address_with_instance_url():
+    source = Path("app/services/scheduler.py").read_text(encoding="utf-8")
+    assert "request_url=f\"{instance.url.rstrip('/')}/file_parse\"" not in source
+    assert "request_url=task.request_url" in source

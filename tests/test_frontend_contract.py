@@ -30,6 +30,13 @@ def test_task_list_displays_request_url():
     assert "taskList.requestUrl" in source
 
 
+def test_request_url_label_is_client_ip():
+    zh = Path("ui/src/i18n/zh.js").read_text(encoding="utf-8")
+    en = Path("ui/src/i18n/en.js").read_text(encoding="utf-8")
+    assert "requestUrl: '请求端 IP'" in zh
+    assert "requestUrl: 'CLIENT IP'" in en
+
+
 def test_failed_tasks_are_loaded_over_rest():
     source = Path("ui/src/stores/index.js").read_text(encoding="utf-8")
     assert "function fetchFailedTasks" in source
